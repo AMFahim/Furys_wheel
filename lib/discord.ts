@@ -16,39 +16,69 @@ export const getDiscordAuthUrl = () => {
 };
 
 export const getDiscordTokens = async (code: string) => {
-  const params = new URLSearchParams({
-    client_id: process.env.DISCORD_CLIENT_ID!,
-    client_secret: process.env.DISCORD_CLIENT_SECRET!,
-    redirect_uri: process.env.DISCORD_REDIRECT_URI!,
-    grant_type: "authorization_code",
-    code,
-  });
+  try {
+    const params = new URLSearchParams({
+      client_id: process.env.DISCORD_CLIENT_ID!,
+      client_secret: process.env.DISCORD_CLIENT_SECRET!,
+      redirect_uri: process.env.DISCORD_REDIRECT_URI!,
+      grant_type: "authorization_code",
+      code,
+    });
 
-  const response = await fetch(DISCORD_ENDPOINTS.TOKEN, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: params,
-  });
+    const response = await fetch(DISCORD_ENDPOINTS.TOKEN, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: params,
+    });
 
-  if (!response.ok) {
-    throw new Error("Failed to get Discord tokens");
+    if (!response.ok) {
+      const error = await response.json().catch(() => null);
+      throw new Error(
+        `Discord token error: ${response.status} ${response.statusText}${
+          error ? ` - ${JSON.stringify(error)}` : ''
+        }`
+      );
+    }
+
+    const data = await response.json();
+    if (!data.access_token) {
+      throw new Error('No access token received from Discord');
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Discord token exchange failed:', error);
+    throw new Error('Failed to exchange Discord code for tokens');
   }
-
-  return response.json();
 };
 
 export const getDiscordUser = async (accessToken: string) => {
-  const response = await fetch(DISCORD_ENDPOINTS.USER, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
+  try {
+    const response = await fetch(DISCORD_ENDPOINTS.USER, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
 
-  if (!response.ok) {
-    throw new Error("Failed to get Discord user");
+    if (!response.ok) {
+      const error = await response.json().catch(() => null);
+      throw new Error(
+        `Discord user error: ${response.status} ${response.statusText}${
+          error ? ` - ${JSON.stringify(error)}` : ''
+        }`
+      );
+    }
+
+    const data = await response.json();
+    if (!data.id) {
+      throw new Error('Invalid user data received from Discord');
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Discord user fetch failed:', error);
+    throw new Error('Failed to fetch Discord user data');
   }
-
-  return response.json();
 };
