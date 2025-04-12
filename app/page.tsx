@@ -62,8 +62,7 @@ export default function Home() {
     <>
      <main className="flex min-h-screen bg-gradient-to-br from-[#0a0a1a] to-[#1a1a3a]">
       {/* Glass Wheel List Component (Left Sidebar) */}
-      <GlassWinnersList winners={winners} />
-
+      <GlassWheelList wheels={wheels} selectedWheel={selectedWheel} onSelectWheel={setSelectedWheel} />
 
       {/* Main Content Area */}
       <div className="flex-1 p-8 flex flex-col items-center justify-center">
@@ -73,6 +72,7 @@ export default function Home() {
           </h1>
           <p className="text-lg text-gray-300">Spin the wheel and test your luck. What prize awaits you today?</p>
         </div>
+
         <div>
         <FurysWheel/>
         </div>
@@ -85,7 +85,7 @@ export default function Home() {
       </div>
 
       {/* Glass Winners List Component (Right Sidebar) */}
-      <GlassWheelList wheels={wheels} selectedWheel={selectedWheel} onSelectWheel={setSelectedWheel} />
+      <GlassWinnersList winners={winners} />
     </main>
     </>
   )
