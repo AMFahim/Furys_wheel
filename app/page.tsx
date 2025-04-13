@@ -5,6 +5,7 @@ import WheelItemsList from "@/components/WheelItemsList"
 import GlassWinnersList from "@/components/Glass-winner-list"
 import GlassWheelList from "@/components/WheelItemsList"
 import { useState } from "react"
+import Link from "next/link";
 
 export default function Home() {
   const [selectedWheel, setSelectedWheel] = useState<string | null>(null)
@@ -77,11 +78,11 @@ export default function Home() {
         <FurysWheel/>
         </div>
 
-        <div className="absolute top-4 right-4">
+        <Link href={"/login"} className="absolute top-4 right-4">
           <Button variant="outline" className="border-purple-500 text-purple-400 hover:bg-purple-900/20">
             Login
           </Button>
-        </div>
+        </Link>
       </div>
 
       {/* Glass Winners List Component (Right Sidebar) */}
