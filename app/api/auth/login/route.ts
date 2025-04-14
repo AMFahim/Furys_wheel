@@ -1,14 +1,64 @@
-import { registerSchema } from "@/lib/validations/auth";
-import { PrismaClient } from "@prisma/client";
-import { compare, hash } from "bcrypt";
 import { NextResponse } from "next/server";
-import jwt from "jsonwebtoken";
+import { compare } from "bcrypt";
+import { PrismaClient } from "@prisma/client";
+import { z } from "zod";
+
 const prisma = new PrismaClient();
 
+// Login validation schema
+const loginSchema = z.object({
+  username: z.string().min(1, "Username is required"),
+  password: z.string().min(1, "Password is required"),
+});
+
+/**
+ * @swagger
+ * /api/auth/login:
+ *   post:
+ *     summary: Login user
+ *     description: Authenticates a user with username and password
+ *     tags:
+ *       - Authentication
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - username
+ *               - password
+ *             properties:
+ *               username:
+ *                 type: string
+ *                 example: testuser123
+ *               password:
+ *                 type: string
+ *                 example: TestPass123!
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Login successful
+ *                 user:
+ *                   $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Invalid input
+ *       401:
+ *         description: Invalid credentials
+ *       500:
+ *         description: Internal server error
+ */
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const result = registerSchema.safeParse(body);
+    const result = loginSchema.safeParse(body);
 
     if (!result.success) {
       return NextResponse.json(
@@ -17,53 +67,92 @@ export async function POST(request: Request) {
       );
     }
 
+    const { username, password } = result.data;
+
+    // Find user
     const user = await prisma.user.findUnique({
-      where: {
-        username: result.data.username,
+      where: { username },
+      select: {
+        id: true,
+        username: true,
+        password: true,
+        discordUsername: true,
+        discordAvatar: true,
+        authType: true,
       },
     });
 
     if (!user) {
-      return NextResponse.json({ message: "User not found" }, { status: 404 });
-    }
-
-    const comparePassword = await compare(result.data.password, user.password);
-
-    if (!comparePassword) {
       return NextResponse.json(
-        { message: "Invalid password" },
+        { message: "Invalid credentials" },
         { status: 401 }
       );
     }
-    const token = jwt.sign(
+
+    // For Discord users, suggest using Discord login
+    if (user.authType === "discord") {
+      return NextResponse.json(
+        { message: "Please login with Discord" },
+        { status: 400 }
+      );
+    }
+
+    // Verify password
+    const isValidPassword = await compare(password, user.password);
+
+    if (!isValidPassword) {
+      return NextResponse.json(
+        { message: "Invalid credentials" },
+        { status: 401 }
+      );
+    }
+
+    // Create response with cookies
+    const response = NextResponse.json(
       {
-        id: user.id,
-        username: user.username,
-        role: user.role,
+        message: "Login successful",
+        user: {
+          id: user.id,
+          username: user.username,
+          discordUsername: user.discordUsername,
+          discordAvatar: user.discordAvatar,
+        },
       },
-      process.env.JWT_SECRET!,
-      { expiresIn: "7d" }
+      { status: 200 }
     );
 
-    const response = NextResponse.json(
-        { message: "Login successful", user },
-        { status: 200 }
-      );
-  
-      // Set the cookie
-      response.cookies.set("token", token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 60 * 60 * 24 * 7, // 7 days
-        path: "/",
-      });
-  
-      return response;
-  } catch (e: any) {
-    console.log(e);
+    // Set secure HTTP-only cookie with user session data
+    response.cookies.set({
+      name: "session",
+      value: user.id,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 7, // 1 week
+      path: "/",
+    });
+
+    // Set a separate cookie for client-side user info
+    response.cookies.set({
+      name: "user_info",
+      value: JSON.stringify({
+        username: user.username,
+        avatar: user.discordAvatar,
+      }),
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 7, // 1 week
+      path: "/",
+    });
+
+    return response;
+  } catch (error) {
+    console.error("Login error:", error);
     return NextResponse.json(
-      { error: e.message || "Internal Server Error" },
+      { message: "Internal server error" },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }

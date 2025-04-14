@@ -2,6 +2,7 @@
 
 import React, { useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -16,8 +17,13 @@ import {
 } from "@/components/ui/card"
 import { ArrowLeft, Loader2, UserPlus } from "lucide-react"
 import { DiscordLoginButton } from "@/components/discord-login-button"
+import { useToast } from "@/components/ui/use-toast"
+import axiosInstance from "@/utils/axiosInstance"
 
 export default function RegisterPage() {
+  const router = useRouter()
+  const { toast } = useToast()
+
   const [formData, setFormData] = useState({
     username: "",
     password: "",
@@ -28,6 +34,7 @@ export default function RegisterPage() {
     username: "",
     password: "",
     confirmPassword: "",
+    general: "",
   })
 
   const [isLoading, setIsLoading] = useState(false)
@@ -35,7 +42,7 @@ export default function RegisterPage() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target
     setFormData((prev) => ({ ...prev, [id]: value }))
-    setFormErrors((prev) => ({ ...prev, [id]: "" }))
+    setFormErrors((prev) => ({ ...prev, [id]: "", general: "" }))
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -45,6 +52,7 @@ export default function RegisterPage() {
       username: "",
       password: "",
       confirmPassword: "",
+      general: "",
     }
 
     if (!formData.username.trim()) {
@@ -67,11 +75,58 @@ export default function RegisterPage() {
 
     setIsLoading(true)
 
-    // Simulate registration process
-    setTimeout(() => {
+    try {
+      const response = await axiosInstance.post("/api/auth/register", {
+        username: formData.username,
+        password: formData.password,
+      })
+
+      if (response.status === 201) {
+        toast({
+          title: "Registration successful",
+          description: "Please log in with your new account",
+          variant: "default",
+        })
+        router.push("/login")
+      }
+    } catch (error: any) {
+      console.error("Registration error:", error)
+
+      if (error.response?.status === 409) {
+        setFormErrors((prev) => ({
+          ...prev,
+          username: "Username already taken",
+        }))
+        toast({
+          title: "Registration failed",
+          description: "Username is already taken",
+          variant: "destructive",
+        })
+      } else if (error.response?.status === 400) {
+        // Handle validation errors from the server
+        const validationErrors = error.response.data.errors
+        if (validationErrors) {
+          const newErrors = { ...errors }
+          validationErrors.forEach((err: any) => {
+            if (err.path[0] === "username") newErrors.username = err.message
+            if (err.path[0] === "password") newErrors.password = err.message
+          })
+          setFormErrors(newErrors)
+        }
+      } else {
+        setFormErrors((prev) => ({
+          ...prev,
+          general: "An error occurred during registration",
+        }))
+        toast({
+          title: "Registration failed",
+          description: "Please try again later",
+          variant: "destructive",
+        })
+      }
+    } finally {
       setIsLoading(false)
-      console.log("Form submitted", formData)
-    }, 1500)
+    }
   }
 
   return (
@@ -110,6 +165,10 @@ export default function RegisterPage() {
           </CardHeader>
 
           <CardContent className="space-y-4">
+            {formErrors.general && (
+              <p className="text-sm text-red-400 text-center">{formErrors.general}</p>
+            )}
+            
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Username */}
               <div className="space-y-2">

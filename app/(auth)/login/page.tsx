@@ -1,9 +1,9 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,26 +11,87 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowLeft, Loader2, LogIn } from "lucide-react"
 import { DiscordLoginButton } from "@/components/discord-login-button"
+import { useToast } from "@/components/ui/use-toast"
+import axiosInstance from "@/utils/axiosInstance"
+import { useUser } from "@/providers/UserContext"
+
+interface LoginError {
+  username?: string;
+  password?: string;
+  general?: string;
+}
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
+  const [errors, setErrors] = useState<LoginError>({})
+  
+  const router = useRouter()
+  const { toast } = useToast()
+  const { setUser } = useUser()
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
+    setErrors({})
 
-    // Log the form data
-    console.log("Login Submitted")
-    console.log("Username:", username)
-    console.log("Password:", password)
+    try {
+      const response = await axiosInstance.post("/api/auth/login", {
+        username,
+        password,
+      })
 
-    // Simulate login process
-    setTimeout(() => {
+      if (response.data.user) {
+        setUser(response.data.user)
+        
+        toast({
+          title: "Login successful",
+          description: "Welcome back!",
+          variant: "default",
+        })
+
+        // Redirect to dashboard or home page
+        router.push("/dashboard")
+      }
+    } catch (error: any) {
+      console.error("Login error:", error)
+
+      if (error.response?.status === 401) {
+        setErrors({ general: "Invalid username or password" })
+        toast({
+          title: "Login failed",
+          description: "Invalid username or password",
+          variant: "destructive",
+        })
+      } else if (error.response?.status === 400) {
+        if (error.response.data.message === "Please login with Discord") {
+          setErrors({ general: "This account uses Discord authentication" })
+          toast({
+            title: "Login failed",
+            description: "Please use Discord login for this account",
+            variant: "destructive",
+          })
+        } else {
+          // Handle validation errors
+          const validationErrors: LoginError = {}
+          error.response.data.errors?.forEach((err: any) => {
+            if (err.path[0] === "username") validationErrors.username = err.message
+            if (err.path[0] === "password") validationErrors.password = err.message
+          })
+          setErrors(validationErrors)
+        }
+      } else {
+        setErrors({ general: "An error occurred. Please try again." })
+        toast({
+          title: "Error",
+          description: "An unexpected error occurred. Please try again.",
+          variant: "destructive",
+        })
+      }
+    } finally {
       setIsLoading(false)
-      // Add actual login logic here
-    }, 1500)
+    }
   }
 
   return (
@@ -62,6 +123,9 @@ export default function LoginPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <form onSubmit={handleSubmit} className="space-y-4">
+              {errors.general && (
+                <div className="text-red-400 text-sm text-center">{errors.general}</div>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="username" className="text-gray-300">
                   Username
@@ -73,16 +137,19 @@ export default function LoginPage() {
                     required
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    className="bg-[#252547] border-purple-500/30 focus:border-purple-500 focus:ring-purple-500/20 text-white placeholder:text-gray-500"
+                    className={`bg-[#252547] border-purple-500/30 focus:border-purple-500 focus:ring-purple-500/20 text-white placeholder:text-gray-500 ${
+                      errors.username ? "border-red-500" : ""
+                    }`}
                   />
+                  {errors.username && (
+                    <span className="text-red-400 text-sm mt-1">{errors.username}</span>
+                  )}
                 </motion.div>
               </div>
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password" className="text-gray-300">
-                    Password
-                  </Label>
-                </div>
+                <Label htmlFor="password" className="text-gray-300">
+                  Password
+                </Label>
                 <motion.div whileFocus={{ scale: 1.01 }} className="relative">
                   <Input
                     id="password"
@@ -91,8 +158,13 @@ export default function LoginPage() {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="bg-[#252547] border-purple-500/30 focus:border-purple-500 focus:ring-purple-500/20 text-white placeholder:text-gray-500"
+                    className={`bg-[#252547] border-purple-500/30 focus:border-purple-500 focus:ring-purple-500/20 text-white placeholder:text-gray-500 ${
+                      errors.password ? "border-red-500" : ""
+                    }`}
                   />
+                  {errors.password && (
+                    <span className="text-red-400 text-sm mt-1">{errors.password}</span>
+                  )}
                 </motion.div>
               </div>
               <motion.div

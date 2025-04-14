@@ -5,26 +5,24 @@ import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Loader2 } from "lucide-react"
 import { useUser } from "@/providers/UserContext"
-import { getDiscordAuthUrl } from '@/lib/discord';
-
+import axiosInstance from "@/utils/axiosInstance"
 
 export function DiscordLoginButton() {
   const [isLoading, setIsLoading] = useState(false)
-  const { discordData, setFetchDiscordUser } = useUser();
-  
+  const { setFetchDiscordUser } = useUser()
 
-  const handleDiscordLogin = () => {
-    // setIsLoading(true)
-
-    // // Simulate Discord login process
-    // setTimeout(() => {
-    //   setIsLoading(false)
-    //   // Handle Discord login logic here
-    // }, 1500)
-    setFetchDiscordUser(true);
-    
-    window.location.href = getDiscordAuthUrl();
-
+  const handleDiscordLogin = async () => {
+    try {
+      setIsLoading(true)
+      setFetchDiscordUser(true)
+      
+      const response = await axiosInstance.get("/api/auth/discord/url")
+      window.location.href = response.data.url
+    } catch (error) {
+      console.error("Failed to get Discord auth URL:", error)
+      setIsLoading(false)
+      setFetchDiscordUser(false)
+    }
   }
 
   return (
