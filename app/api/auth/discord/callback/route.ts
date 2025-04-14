@@ -11,10 +11,11 @@ import { createToken } from "@/lib/auth";
 const prisma = new PrismaClient();
 
 export async function GET(request: Request) {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  
   try {
     const { searchParams } = new URL(request.url);
     const code = searchParams.get("code");
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
     if (!code) {
       return NextResponse.redirect(new URL('/login?error=no_code', baseUrl));
@@ -83,7 +84,7 @@ export async function GET(request: Request) {
         });
       });
 
-      // Generate token
+      // Generate token and redirect
       const token = createToken({
         userId: user!.id,
         username: user!.username,
@@ -92,21 +93,18 @@ export async function GET(request: Request) {
         discordAvatar: user!.discordAvatar,
       });
 
-      // Redirect with token
-      const redirectUrl = new URL("/auth/discord/callback", process.env.NEXT_PUBLIC_APP_URL);
+      const redirectUrl = new URL("/auth/discord/callback", baseUrl);
       redirectUrl.searchParams.set("token", token);
       redirectUrl.searchParams.set("userData", JSON.stringify(user));
       
       return NextResponse.redirect(redirectUrl);
     } catch (error) {
       console.error("User creation/update error:", error);
-      return NextResponse.redirect("/login?error=registration_failed");
+      return NextResponse.redirect(new URL('/login?error=registration_failed', baseUrl));
     }
   } catch (error) {
     console.error("Discord OAuth error:", error);
-    return NextResponse.redirect(
-      new URL('/login?error=oauth_error', process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000')
-    );
+    return NextResponse.redirect(new URL('/login?error=oauth_error', baseUrl));
   } finally {
     await prisma.$disconnect();
   }

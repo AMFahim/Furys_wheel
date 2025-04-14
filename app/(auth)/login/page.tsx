@@ -60,7 +60,7 @@ export default function LoginPage() {
           description: "Welcome back!",
           variant: "default",
         });
-        router.push("/dashboard");
+        router.push("/profile");
       }
     } catch (error) {
       const errorDetails = handleAxiosError(error as AxiosError);

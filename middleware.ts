@@ -5,6 +5,7 @@ import { userStatus } from '@prisma/client';
 
 // Define protected routes and their required roles
 const PROTECTED_ROUTES = {
+  '/profile': [userStatus.USER, userStatus.ADMIN],
   '/game': [userStatus.USER, userStatus.ADMIN],
   '/admin': [userStatus.ADMIN],
   '/api/admin': [userStatus.ADMIN],
@@ -12,6 +13,7 @@ const PROTECTED_ROUTES = {
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
   // Check if the path is protected
   const protectedPath = Object.keys(PROTECTED_ROUTES).find(path => 
@@ -30,7 +32,7 @@ export function middleware(request: NextRequest) {
           { status: 401 }
         );
       }
-      return NextResponse.redirect(new URL('/login', request.url));
+      return NextResponse.redirect(new URL('/login', baseUrl));
     }
 
     // Verify token and check user role
@@ -42,7 +44,7 @@ export function middleware(request: NextRequest) {
           { status: 401 }
         );
       }
-      return NextResponse.redirect(new URL('/login', request.url));
+      return NextResponse.redirect(new URL('/login', baseUrl));
     }
 
     // Check if user has required role for the path
