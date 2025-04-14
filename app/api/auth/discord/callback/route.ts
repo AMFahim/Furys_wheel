@@ -43,10 +43,9 @@ export async function GET(request: Request) {
           },
         });
 
-        // If user exists and has same Discord ID, redirect to login
+        // If user exists and has same Discord ID, update and return
         if (existingUser?.discordId === discordUser.id) {
-          // Optional: Update user info if needed
-          await tx.user.update({
+          return await tx.user.update({
             where: { id: existingUser!.id },
             data: {
               discordUsername: `${discordUser.username}#${discordUser.discriminator}`,
@@ -55,7 +54,6 @@ export async function GET(request: Request) {
                 : null,
             },
           });
-          return existingUser;
         }
 
         // If username conflict but different Discord ID, throw error
@@ -93,11 +91,22 @@ export async function GET(request: Request) {
         discordAvatar: user!.discordAvatar,
       });
 
-      const redirectUrl = new URL("/auth/discord/callback", baseUrl);
-      redirectUrl.searchParams.set("token", token);
-      redirectUrl.searchParams.set("userData", JSON.stringify(user));
+      // Create the response with the token cookie
+      const response = NextResponse.redirect(new URL('/profile', baseUrl));
       
-      return NextResponse.redirect(redirectUrl);
+      // Set HTTP-only cookie
+      response.cookies.set({
+        name: 'token',
+        value: token,
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 60 * 60 * 24 * 7, // 7 days
+      });
+
+      return response;
+
     } catch (error) {
       console.error("User creation/update error:", error);
       return NextResponse.redirect(new URL('/login?error=registration_failed', baseUrl));
