@@ -1,28 +1,50 @@
-import { getUserFromToken } from "@/lib/JwtUser";
-import { roleGuard } from "@/lib/roleGuard";
+import { verifyToken } from "@/lib/auth";
 import { WheelSchema } from "@/lib/validations/wheel";
 import { PrismaClient, userStatus } from "@prisma/client";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { AxiosError } from "axios";
+import { handleAxiosError } from "@/utils/errorHandler";
 
 const prisma = new PrismaClient();
 
-export async function POST(request: Request) {
-  const body = await request.json();
+async function validateAdmin(request: NextRequest) {
+  const authHeader = request.headers.get("authorization");
+  const token = authHeader?.split(" ")[1];
+
+  if (!token) {
+    return NextResponse.json(
+      { message: "Authentication required" },
+      { status: 401 }
+    );
+  }
+
+  const user = verifyToken(token);
+  if (!user || user.role !== userStatus.ADMIN) {
+    return NextResponse.json(
+      { message: "Unauthorized access" },
+      { status: 403 }
+    );
+  }
+
+  return user;
+}
+
+export async function POST(request: NextRequest) {
   try {
-    const user =await roleGuard(userStatus.ADMIN);
-
-    // console.log(user)
-    if(user instanceof NextResponse){
-      return user
+    const user = await validateAdmin(request);
+    if (user instanceof NextResponse) {
+      return user;
     }
-    const result = WheelSchema.safeParse(body);
 
+    const body = await request.json();
+    const result = WheelSchema.safeParse(body);
     if (!result.success) {
       return NextResponse.json(
         { message: "Invalid input", errors: result.error.errors },
         { status: 400 }
       );
     }
+
     const { wheelOption, ...rest } = result.data;
     const data = await prisma.wheel.create({
       data: {
@@ -40,28 +62,33 @@ export async function POST(request: Request) {
       { data, message: "Wheel created successfully", status: true },
       { status: 200 }
     );
-  } catch (e: any) {
-    console.log(e);
+  } catch (error) {
+    const errorDetails = handleAxiosError(error as AxiosError);
     return NextResponse.json(
-      { error: e.message || "Internal Server Error" },
-      { status: 500 }
+      { message: errorDetails.message, errors: errorDetails.errors },
+      { status: error instanceof AxiosError ? error.response?.status || 500 : 500 }
     );
   }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const user = await validateAdmin(request);
+    if (user instanceof NextResponse) {
+      return user;
+    }
+
     const data = await prisma.wheel.findMany({
       include: {
         wheelOption: true,
       },
     });
     return NextResponse.json(data);
-  } catch (e: any) {
-    console.log(e);
+  } catch (error) {
+    const errorDetails = handleAxiosError(error as AxiosError);
     return NextResponse.json(
-      { error: e.message || "Internal Server Error" },
-      { status: 500 }
+      { message: errorDetails.message, errors: errorDetails.errors },
+      { status: error instanceof AxiosError ? error.response?.status || 500 : 500 }
     );
   }
 }

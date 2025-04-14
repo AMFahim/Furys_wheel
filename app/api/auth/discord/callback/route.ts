@@ -6,6 +6,7 @@ import {
   discordUsernameSchema,
   usernameValidation,
 } from "@/lib/validations/auth";
+import { createToken } from "@/lib/auth";
 
 const prisma = new PrismaClient();
 
@@ -13,9 +14,10 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const code = searchParams.get("code");
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
     if (!code) {
-      return NextResponse.redirect("/login?error=no_code");
+      return NextResponse.redirect(new URL('/login?error=no_code', baseUrl));
     }
 
     // 1. Exchange code for access token
@@ -81,44 +83,30 @@ export async function GET(request: Request) {
         });
       });
 
-      // 6. Set any necessary cookies or session data here
-      const response = NextResponse.redirect(
-        "/login?message=discord_auth_successful"
-      );
-
-      // Set secure HTTP-only cookie with user session data
-      response.cookies.set({
-        name: "session",
-        value: user?.id ?? '',
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        maxAge: 60 * 60 * 24 * 7, // 1 week
-        path: "/",
+      // Generate token
+      const token = createToken({
+        userId: user!.id,
+        username: user!.username,
+        role: user!.role,
+        discordUsername: user!.discordUsername,
+        discordAvatar: user!.discordAvatar,
       });
 
-      // Set a separate cookie for client-side user info
-      response.cookies.set({
-        name: "user_info",
-        value: JSON.stringify({
-          username: user?.username,
-          avatar: user?.discordAvatar,
-        }),
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        maxAge: 60 * 60 * 24 * 7, // 1 week
-        path: "/",
-      });
-
-      // 7. Redirect to success page
-      return response;
+      // Redirect with token
+      const redirectUrl = new URL("/auth/discord/callback", process.env.NEXT_PUBLIC_APP_URL);
+      redirectUrl.searchParams.set("token", token);
+      redirectUrl.searchParams.set("userData", JSON.stringify(user));
+      
+      return NextResponse.redirect(redirectUrl);
     } catch (error) {
       console.error("User creation/update error:", error);
       return NextResponse.redirect("/login?error=registration_failed");
     }
   } catch (error) {
     console.error("Discord OAuth error:", error);
-    return NextResponse.redirect("/login?error=oauth_error");
+    return NextResponse.redirect(
+      new URL('/login?error=oauth_error', process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000')
+    );
   } finally {
     await prisma.$disconnect();
   }

@@ -1,12 +1,12 @@
-"use client"
+"use client";
 
-import React, { useState } from "react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import React, { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
@@ -14,120 +14,123 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import { ArrowLeft, Loader2, UserPlus } from "lucide-react"
-import { DiscordLoginButton } from "@/components/discord-login-button"
-import { useToast } from "@/components/ui/use-toast"
-import axiosInstance from "@/utils/axiosInstance"
+} from "@/components/ui/card";
+import { ArrowLeft, Loader2, UserPlus } from "lucide-react";
+import { DiscordLoginButton } from "@/components/discord-login-button";
+import { useToast } from "@/components/ui/use-toast";
+import axiosInstance from "@/utils/axiosInstance";
+import { handleAxiosError } from "@/utils/errorHandler";
+import { AxiosError } from "axios";
 
 export default function RegisterPage() {
-  const router = useRouter()
-  const { toast } = useToast()
+  const router = useRouter();
+  const { toast } = useToast();
 
   const [formData, setFormData] = useState({
     username: "",
     password: "",
     confirmPassword: "",
-  })
+  });
 
   const [formErrors, setFormErrors] = useState({
     username: "",
     password: "",
     confirmPassword: "",
     general: "",
-  })
+  });
 
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { id, value } = e.target
-    setFormData((prev) => ({ ...prev, [id]: value }))
-    setFormErrors((prev) => ({ ...prev, [id]: "", general: "" }))
-  }
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-
+  const validateForm = () => {
     const errors = {
       username: "",
       password: "",
       confirmPassword: "",
       general: "",
+    };
+
+    if (!formData.username) {
+      errors.username = "Username is required";
     }
 
-    if (!formData.username.trim()) {
-      errors.username = "Username is required"
+    if (!formData.password) {
+      errors.password = "Password is required";
+    } else if (formData.password.length < 8) {
+      errors.password = "Password must be at least 8 characters";
     }
 
-    if (formData.password.length < 6) {
-      errors.password = "Password must be at least 6 characters"
+    if (!formData.confirmPassword) {
+      errors.confirmPassword = "Please confirm your password";
+    } else if (formData.password !== formData.confirmPassword) {
+      errors.confirmPassword = "Passwords do not match";
     }
 
-    if (formData.password !== formData.confirmPassword) {
-      errors.confirmPassword = "Passwords do not match"
-    }
+    return errors;
+  };
 
-    const hasErrors = Object.values(errors).some((err) => err !== "")
-    if (hasErrors) {
-      setFormErrors(errors)
-      return
-    }
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    setFormData((prev) => ({ ...prev, [id]: value }));
+    // Clear errors when user types
+    setFormErrors((prev) => ({ ...prev, [id]: "", general: "" }));
+  };
 
-    setIsLoading(true)
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    // Reset errors
+    setFormErrors({ username: "", password: "", confirmPassword: "", general: "" });
+
+    // Validate form
+    const validationErrors = validateForm();
+    if (Object.values(validationErrors).some(error => error !== "")) {
+      setFormErrors(validationErrors);
+      setIsLoading(false);
+      return;
+    }
 
     try {
       const response = await axiosInstance.post("/api/auth/register", {
         username: formData.username,
         password: formData.password,
-      })
+      });
 
       if (response.status === 201) {
         toast({
           title: "Registration successful",
           description: "Please log in with your new account",
           variant: "default",
-        })
-        router.push("/login")
+        });
+        router.push("/login");
       }
-    } catch (error: any) {
-      console.error("Registration error:", error)
-
-      if (error.response?.status === 409) {
-        setFormErrors((prev) => ({
-          ...prev,
-          username: "Username already taken",
-        }))
-        toast({
-          title: "Registration failed",
-          description: "Username is already taken",
-          variant: "destructive",
-        })
-      } else if (error.response?.status === 400) {
-        // Handle validation errors from the server
-        const validationErrors = error.response.data.errors
-        if (validationErrors) {
-          const newErrors = { ...errors }
-          validationErrors.forEach((err: any) => {
-            if (err.path[0] === "username") newErrors.username = err.message
-            if (err.path[0] === "password") newErrors.password = err.message
-          })
-          setFormErrors(newErrors)
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        const errorData = error.response?.data;
+        
+        if (errorData?.errors) {
+          setFormErrors(prev => ({
+            ...prev,
+            ...errorData.errors,
+            general: errorData.message || "Registration failed"
+          }));
+        } else {
+          setFormErrors(prev => ({
+            ...prev,
+            general: errorData?.message || "An unexpected error occurred"
+          }));
         }
-      } else {
-        setFormErrors((prev) => ({
-          ...prev,
-          general: "An error occurred during registration",
-        }))
+
         toast({
           title: "Registration failed",
-          description: "Please try again later",
+          description: errorData?.message || "Please check your input and try again",
           variant: "destructive",
-        })
+        });
       }
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#1a1a2e] to-[#121225] p-4">
@@ -166,11 +169,12 @@ export default function RegisterPage() {
 
           <CardContent className="space-y-4">
             {formErrors.general && (
-              <p className="text-sm text-red-400 text-center">{formErrors.general}</p>
+              <p className="text-sm text-red-400 text-center">
+                {formErrors.general}
+              </p>
             )}
-            
+
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Username */}
               <div className="space-y-2">
                 <Label htmlFor="username" className="text-gray-300">
                   Username
@@ -188,7 +192,6 @@ export default function RegisterPage() {
                 )}
               </div>
 
-              {/* Password */}
               <div className="space-y-2">
                 <Label htmlFor="password" className="text-gray-300">
                   Password
@@ -207,7 +210,6 @@ export default function RegisterPage() {
                 )}
               </div>
 
-              {/* Confirm Password */}
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword" className="text-gray-300">
                   Confirm Password
@@ -226,7 +228,6 @@ export default function RegisterPage() {
                 )}
               </div>
 
-              {/* Submit Button */}
               <motion.div
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
@@ -252,32 +253,33 @@ export default function RegisterPage() {
               </motion.div>
             </form>
 
-            {/* OR Divider */}
-            <div className="relative flex items-center justify-center my-6">
+            <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-700"></div>
+                <span className="w-full border-t border-gray-700" />
               </div>
-              <div className="relative z-10 bg-[#1e1e36] px-3 text-sm text-gray-400">
-                or continue with
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-[#1e1e36] px-2 text-gray-400">
+                  Or continue with
+                </span>
               </div>
             </div>
 
             <DiscordLoginButton />
           </CardContent>
 
-          <CardFooter className="flex justify-center">
-            <p className="text-sm text-gray-400">
+          <CardFooter className="flex flex-col space-y-2">
+            <p className="text-sm text-gray-400 text-center">
               Already have an account?{" "}
               <Link
                 href="/login"
-                className="text-purple-400 hover:text-purple-300 font-medium transition-colors"
+                className="text-purple-400 hover:text-purple-300 hover:underline"
               >
-                Login
+                Sign in
               </Link>
             </p>
           </CardFooter>
         </Card>
       </motion.div>
     </div>
-  )
+  );
 }

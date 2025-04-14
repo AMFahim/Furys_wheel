@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { hash } from "bcrypt";
-import { PrismaClient, Prisma } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
+import { createToken } from "@/lib/auth";
 import { registerSchema } from "@/lib/validations/auth";
 
 const prisma = new PrismaClient();
@@ -78,7 +79,23 @@ const prisma = new PrismaClient();
  */
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    if (!request.body) {
+      return NextResponse.json(
+        { message: "Request body is empty", errors: [{ path: ["body"], message: "Required" }] },
+        { status: 400 }
+      );
+    }
+
+    let body;
+    try {
+      body = await request.json();
+    } catch (e) {
+      return NextResponse.json(
+        { message: "Invalid JSON", errors: [{ path: ["body"], message: "Invalid JSON format" }] },
+        { status: 400 }
+      );
+    }
+
     const result = registerSchema.safeParse(body);
 
     if (!result.success) {
@@ -89,45 +106,45 @@ export async function POST(request: Request) {
     }
 
     const { username, password } = result.data;
+    const hashedPassword = await hash(password, 12);
 
-    try {
-      const hashedPassword = await hash(password, 12);
+    const user = await prisma.user.create({
+      data: {
+        username,
+        password: hashedPassword,
+        authType: "local",
+      },
+      select: {
+        id: true,
+        username: true,
+        role: true,
+        discordUsername: true,
+        discordAvatar: true,
+      },
+    });
 
-      const user = await prisma.user.create({
-        data: {
-          username,
-          authType: "local",
-          password: hashedPassword,
-        },
-        select: {
-          id: true,
-          username: true,
-          discordUsername: true,
-          discordAvatar: true,
-          createdAt: true,
-        },
-      });
+    const token = createToken({
+      userId: user.id,
+      username: user.username,
+      role: user.role,
+      discordUsername: user.discordUsername,
+      discordAvatar: user.discordAvatar,
+    });
 
-      return NextResponse.json(
-        { message: "Registration successful", user },
-        { status: 201 }
-      );
-    } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        if (error.code === 'P2002') {
-          return NextResponse.json(
-            { message: "Username already taken" },
-            { status: 409 }
-          );
-        }
-      }
-      throw error;
-    }
+    return NextResponse.json({
+      message: "Registration successful",
+      token,
+      user,
+    }, { status: 201 });
   } catch (error) {
-    console.error("Registration error:", error);
-    return NextResponse.json(
-      { message: "Internal server error" },
-      { status: 500 }
-    );
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
+      return NextResponse.json(
+        { message: "Username already taken" },
+        { status: 409 }
+      );
+    }
+    throw error;
+  } finally {
+    await prisma.$disconnect();
   }
 }

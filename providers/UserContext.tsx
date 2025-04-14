@@ -1,17 +1,17 @@
 "use client";
 
-import axiosInstance from "@/utils/axiosInstance";
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-
-type User = {
-  name: string;
-  email: string;
-};
+import { useToast } from "@/components/ui/use-toast";
+import { handleAxiosError } from "@/utils/errorHandler";
+import axiosInstance from "@/utils/axiosInstance";
+import { getAuthToken, JwtPayload, verifyToken } from "@/lib/auth";
+import { AxiosError } from "axios";
+import { useRouter } from "next/navigation";
 
 type UserContextType = {
-  user: User | null;
-  setUser: (user: User) => void;
+  user: JwtPayload | null;
+  setUser: (user: JwtPayload | null) => void;
   discordData: any;
   setFetchDiscordUser: (value: boolean) => void;
 };
@@ -19,19 +19,36 @@ type UserContextType = {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<JwtPayload | null>(null);
   const [fetchDiscordUser, setFetchDiscordUser] = useState(false);
+  const { toast } = useToast();
+  const router = useRouter();
+
+  useEffect(() => {
+    const token = getAuthToken();
+    if (token) {
+      const userData = verifyToken(token);
+      setUser(userData);
+    }
+  }, []);
 
   const { data: discordData } = useQuery({
     queryKey: ["discordData"],
     queryFn: async () => {
       try {
         const response = await axiosInstance.get("/api/auth/discord");
-        console.log("API Response Data:", response.data);
-        if (response.status === 200) return response.data;
-        if (response.status === 404) return [];
+        return response.data;
       } catch (error) {
-        console.log(error);
+        const errorDetails = handleAxiosError(error as AxiosError);
+        toast({
+          title: "Discord Data Fetch Failed",
+          description: errorDetails.message,
+          variant: "destructive",
+        });
+
+        if (errorDetails.redirect) {
+          router.push(errorDetails.redirect);
+        }
         return null;
       }
     },
@@ -39,7 +56,9 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   });
 
   return (
-    <UserContext.Provider value={{ user, setUser, discordData, setFetchDiscordUser }}>
+    <UserContext.Provider
+      value={{ user, setUser, discordData, setFetchDiscordUser }}
+    >
       {children}
     </UserContext.Provider>
   );

@@ -6,10 +6,14 @@ import { Button } from "@/components/ui/button"
 import { Loader2 } from "lucide-react"
 import { useUser } from "@/providers/UserContext"
 import axiosInstance from "@/utils/axiosInstance"
+import { handleAxiosError } from "@/utils/errorHandler"
+import { useToast } from "@/components/ui/use-toast"
+import { AxiosError } from "axios"
 
 export function DiscordLoginButton() {
   const [isLoading, setIsLoading] = useState(false)
   const { setFetchDiscordUser } = useUser()
+  const { toast } = useToast()
 
   const handleDiscordLogin = async () => {
     try {
@@ -19,9 +23,15 @@ export function DiscordLoginButton() {
       const response = await axiosInstance.get("/api/auth/discord/url")
       window.location.href = response.data.url
     } catch (error) {
-      console.error("Failed to get Discord auth URL:", error)
-      setIsLoading(false)
+      const errorDetails = handleAxiosError(error as AxiosError)
+      toast({
+        title: "Discord Login Failed",
+        description: errorDetails.message,
+        variant: "destructive",
+      })
       setFetchDiscordUser(false)
+    } finally {
+      setIsLoading(false)
     }
   }
 

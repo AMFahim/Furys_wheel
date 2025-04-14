@@ -30,11 +30,18 @@ export const getDiscordTokens = async (code: string) => {
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
       },
-      body: params,
+      body: params.toString(), // Make sure to convert params to string
     });
 
     if (!response.ok) {
       const error = await response.json().catch(() => null);
+      console.error('Discord API Error:', {
+        status: response.status,
+        statusText: response.statusText,
+        error,
+        clientId: process.env.DISCORD_CLIENT_ID,
+        redirectUri: process.env.DISCORD_REDIRECT_URI,
+      });
       throw new Error(
         `Discord token error: ${response.status} ${response.statusText}${
           error ? ` - ${JSON.stringify(error)}` : ''
@@ -50,7 +57,7 @@ export const getDiscordTokens = async (code: string) => {
     return data;
   } catch (error) {
     console.error('Discord token exchange failed:', error);
-    throw new Error('Failed to exchange Discord code for tokens');
+    throw error; // Propagate the original error for better debugging
   }
 };
 

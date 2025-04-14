@@ -56,6 +56,6 @@ model winPrize {
   wheelName     String
   wheelReward   String
   user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+  updatedBy     String?   // Optional field to track who updated the prize
   status        wheelStatus @default(PENDING)
 }

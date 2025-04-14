@@ -1,22 +1,72 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { verifyToken } from '@/lib/auth';
+import { userStatus } from '@prisma/client';
+
+// Define protected routes and their required roles
+const PROTECTED_ROUTES = {
+  '/game': [userStatus.USER, userStatus.ADMIN],
+  '/admin': [userStatus.ADMIN],
+  '/api/admin': [userStatus.ADMIN],
+} as const;
 
 export function middleware(request: NextRequest) {
-  const session = request.cookies.get('session');
-  
-  // List of paths that require authentication
-  // const protectedPaths = ['/dashboard', '/profile', '/game'];
-  const protectedPaths = ['/game'];
+  const { pathname } = request.nextUrl;
 
-  
-  // Check if the requested path requires authentication
-  const isProtectedPath = protectedPaths.some(path => 
-    request.nextUrl.pathname.startsWith(path)
+  // Check if the path is protected
+  const protectedPath = Object.keys(PROTECTED_ROUTES).find(path => 
+    pathname.startsWith(path)
   );
 
-  if (isProtectedPath && !session) {
-    // Redirect to login if accessing protected route without session
-    return NextResponse.redirect(new URL('/login', request.url));
+  if (protectedPath) {
+    const authHeader = request.headers.get('authorization');
+    const token = authHeader?.split(' ')[1];
+
+    // Handle missing token
+    if (!token) {
+      if (request.headers.get('accept')?.includes('application/json')) {
+        return NextResponse.json(
+          { message: 'Authentication required' },
+          { status: 401 }
+        );
+      }
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
+
+    // Verify token and check user role
+    const user = verifyToken(token);
+    if (!user) {
+      if (request.headers.get('accept')?.includes('application/json')) {
+        return NextResponse.json(
+          { message: 'Invalid token' },
+          { status: 401 }
+        );
+      }
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
+
+    // Check if user has required role for the path
+    const requiredRoles = PROTECTED_ROUTES[protectedPath as keyof typeof PROTECTED_ROUTES];
+    if (!requiredRoles.includes(user.role)) {
+      if (request.headers.get('accept')?.includes('application/json')) {
+        return NextResponse.json(
+          { message: 'Unauthorized access' },
+          { status: 403 }
+        );
+      }
+      return NextResponse.redirect(new URL('/unauthorized', request.url));
+    }
+
+    // Add user info to headers for downstream use
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set('x-user-id', user.userId);
+    requestHeaders.set('x-user-role', user.role);
+
+    return NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      },
+    });
   }
 
   return NextResponse.next();
@@ -25,12 +75,12 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * Match all request paths except:
-     * - api/auth/* (auth endpoints)
+     * Match all request paths except for the ones starting with:
+     * - api/auth (auth endpoints)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * - public folder
+     * - public (public files)
      */
     '/((?!api/auth|_next/static|_next/image|favicon.ico|public).*)',
   ],
