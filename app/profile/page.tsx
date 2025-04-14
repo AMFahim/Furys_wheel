@@ -1,11 +1,20 @@
-import { UserProfile } from "@/components/user-profile"
+"use client";
 
-export default function Home() {
+import { UserProfile } from "@/components/user-profile"
+import { useUser } from "@/providers/UserContext";
+
+export default function ProfilePage() {
+  const { user } = useUser();
+
+  if (!user) {
+    return null; // or a loading state
+  }
+
   return (
     <main className="min-h-screen bg-[#1a1a2e] text-white p-4 flex items-center justify-center">
       <UserProfile
-        username="Alex Johnson"
-        avatarUrl="/placeholder.svg?height=100&width=100"
+        username={user.username}
+        avatarUrl={user.discordAvatar || "/placeholder.svg?height=100&width=100"}
         userRank={1}
         claimedGifts={[
           { name: "Fortune Wheel", type: "wheel", claimedAt: "2 mins ago" },
