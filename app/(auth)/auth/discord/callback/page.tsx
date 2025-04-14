@@ -5,8 +5,6 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useUser } from "@/providers/UserContext";
 import { setAuthToken } from "@/lib/auth";
 import { useToast } from "@/components/ui/use-toast";
-import { handleAxiosError } from "@/utils/errorHandler";
-import { AxiosError } from "axios";
 
 export default function DiscordCallback() {
   const searchParams = useSearchParams();
@@ -21,29 +19,36 @@ export default function DiscordCallback() {
     if (token && userDataStr) {
       try {
         const userData = JSON.parse(userDataStr);
+        
+        // Set the token in localStorage or cookie
         setAuthToken(token);
+        
+        // Update the user context
         setUser(userData);
+
         toast({
           title: "Login successful",
-          description: "Welcome back!",
+          description: "Welcome to your account!",
           variant: "default",
         });
+
+        // Redirect to profile page
         router.push("/profile");
       } catch (error) {
-        const errorDetails = handleAxiosError(error as AxiosError);
+        console.error("Error processing login:", error);
         toast({
-          title: "Authentication failed",
-          description: errorDetails.message,
+          title: "Login failed",
+          description: "There was an error logging you in. Please try again.",
           variant: "destructive",
         });
-
-        if (errorDetails.redirect) {
-          router.push(errorDetails.redirect);
-        } else {
-          router.push("/login");
-        }
+        router.push("/login");
       }
     } else {
+      toast({
+        title: "Login failed",
+        description: "Missing authentication data. Please try again.",
+        variant: "destructive",
+      });
       router.push("/login");
     }
   }, [searchParams, router, setUser, toast]);

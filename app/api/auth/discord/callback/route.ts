@@ -82,19 +82,31 @@ export async function GET(request: Request) {
         });
       });
 
-      // Generate token and redirect
       const token = createToken({
-        userId: user!.id,
-        username: user!.username,
-        role: user!.role,
-        discordUsername: user!.discordUsername,
-        discordAvatar: user!.discordAvatar,
+        userId: user.id,
+        username: user.username,
+        role: user.role,
+        discordUsername: user.discordUsername,
+        discordAvatar: user.discordAvatar,
       });
 
-      // Create the response with the token cookie
-      const response = NextResponse.redirect(new URL('/profile', baseUrl));
+      // Create the URL with user data
+      const userData = {
+        id: user.id,
+        username: user.username,
+        role: user.role,
+        discordUsername: user.discordUsername,
+        discordAvatar: user.discordAvatar,
+      };
+
+      const callbackUrl = new URL('/auth/discord/callback', baseUrl);
+      callbackUrl.searchParams.set('token', token);
+      callbackUrl.searchParams.set('userData', JSON.stringify(userData));
+
+      // Create response with redirect to the client-side callback page
+      const response = NextResponse.redirect(callbackUrl);
       
-      // Set HTTP-only cookie
+      // Set cookie
       response.cookies.set({
         name: 'token',
         value: token,
