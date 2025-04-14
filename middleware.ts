@@ -5,7 +5,9 @@ export function middleware(request: NextRequest) {
   const session = request.cookies.get('session');
   
   // List of paths that require authentication
-  const protectedPaths = ['/dashboard', '/profile', '/game'];
+  // const protectedPaths = ['/dashboard', '/profile', '/game'];
+  const protectedPaths = ['/game'];
+
   
   // Check if the requested path requires authentication
   const isProtectedPath = protectedPaths.some(path => 
