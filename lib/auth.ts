@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { userStatus } from '@prisma/client';
 import Cookies from 'js-cookie';
+import { jwtVerify } from 'jose';
 
 const JWT_SECRET = process.env.JWT_SECRET!;
 const JWT_EXPIRES_IN = '7d';
@@ -18,13 +19,17 @@ export const createToken = (payload: JwtPayload): string => {
   return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 };
 
-export const verifyToken = (token: string): JwtPayload | null => {
+export async function verifyToken(token: string) {
+  const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
   try {
-    return jwt.verify(token, JWT_SECRET) as JwtPayload;
-  } catch {
+    const { payload } = await jwtVerify(token, secret);
+    // console.log(payload);
+    return payload;
+  } catch (e) {
     return null;
   }
-};
+}
+
 
 // Client-side token management using cookies
 export const getAuthToken = (): string | null => {
