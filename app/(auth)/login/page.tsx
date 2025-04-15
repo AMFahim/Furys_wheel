@@ -52,15 +52,18 @@ export default function LoginPage() {
         password,
       });
 
+      console.log("login response", response.status);
+
       if (response.data.token && response.data.user) {
+        console.log("login successfull")
+        router.replace("/profile");
         setAuthToken(response.data.token);
         setUser(response.data.user);
-        toast({
-          title: "Login successful",
-          description: "Welcome back!",
-          variant: "default",
-        });
-        router.push("/profile");
+        // toast({
+        //   title: "Login successful",
+        //   description: "Welcome back!",
+        //   variant: "default",
+        // });
       }
     } catch (error) {
       const errorDetails = handleAxiosError(error as AxiosError);

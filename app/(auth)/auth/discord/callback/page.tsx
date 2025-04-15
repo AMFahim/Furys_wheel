@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useUser } from "@/providers/UserContext";
 import { setAuthToken } from "@/lib/auth";
@@ -54,8 +54,10 @@ export default function DiscordCallback() {
   }, [searchParams, router, setUser, toast]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <Suspense fallback={"Loading..."}>
+      <div className="min-h-screen flex items-center justify-center">
       <div className="animate-pulse text-purple-500">Processing login...</div>
     </div>
+    </Suspense>
   );
 }
