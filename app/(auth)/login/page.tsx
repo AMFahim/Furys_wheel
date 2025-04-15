@@ -56,7 +56,6 @@ export default function LoginPage() {
 
       if (response.data.token && response.data.user) {
         console.log("login successfull")
-        router.replace("/profile");
         setAuthToken(response.data.token);
         setUser(response.data.user);
         // toast({
@@ -64,6 +63,13 @@ export default function LoginPage() {
         //   description: "Welcome back!",
         //   variant: "default",
         // });
+        if(response.data.user.role==="USER"){
+          router.replace("/profile");
+        }
+        if(response.data.user.role==="ADMIN"){
+          router.replace("/dashboard");
+        }
+
       }
     } catch (error) {
       const errorDetails = handleAxiosError(error as AxiosError);
