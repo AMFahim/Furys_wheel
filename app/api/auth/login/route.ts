@@ -45,7 +45,8 @@ export async function POST(request: Request) {
           role: user.role,
           discordUsername: user.discordUsername,
           discordAvatar: user.discordAvatar,
-        }
+        },
+        token: token
       },
       { status: 200 }
     );

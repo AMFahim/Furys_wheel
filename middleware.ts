@@ -4,12 +4,21 @@ import { verifyToken } from '@/lib/auth';
 import { userStatus } from '@prisma/client';
 
 // Define protected routes and their required roles
-const PROTECTED_ROUTES = {
+// const PROTECTED_ROUTES = {
+//   '/profile': [userStatus.USER, userStatus.ADMIN],
+//   '/game': [userStatus.USER, userStatus.ADMIN],
+//   '/admin': [userStatus.ADMIN],
+//   '/api/admin': [userStatus.ADMIN],
+// } as const;
+
+const PROTECTED_ROUTES: Record<string, userStatus[]> = {
   '/profile': [userStatus.USER, userStatus.ADMIN],
   '/game': [userStatus.USER, userStatus.ADMIN],
   '/admin': [userStatus.ADMIN],
   '/api/admin': [userStatus.ADMIN],
-} as const;
+};
+
+
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -21,10 +30,14 @@ export function middleware(request: NextRequest) {
   );
 
   if (protectedPath) {
-    const authHeader = request.headers.get('authorization');
-    const token = authHeader?.split(' ')[1];
+    // const authHeader = request.headers.get('authorization');
+    // console.log("auth header", authHeader);
+    const token = request.cookies.get('token')?.value;
 
-    // Handle missing token
+    // const token = authHeader?.split(' ')[1];
+
+    // Handle missing 
+    console.log("token", token);
     if (!token) {
       if (request.headers.get('accept')?.includes('application/json')) {
         return NextResponse.json(

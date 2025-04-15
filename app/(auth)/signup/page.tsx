@@ -14,17 +14,21 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { ArrowLeft, Loader2, UserPlus } from "lucide-react";
-import { DiscordLoginButton } from "@/components/discord-login-button";
-import { useToast } from "@/components/ui/use-toast";
-import axiosInstance from "@/utils/axiosInstance";
-import { handleAxiosError } from "@/utils/errorHandler";
-import { AxiosError } from "axios";
+} from "@/components/ui/card"
+import { ArrowLeft, Loader2, UserPlus } from "lucide-react"
+import { DiscordLoginButton } from "@/components/discord-login-button"
+import axiosInstance from "@/utils/axiosInstance"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { toast } from "sonner"
+
+type UserData = {
+  username: string;
+  password: string;
+}
 
 export default function RegisterPage() {
-  const router = useRouter();
-  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const navigate = useRouter()
 
   const [formData, setFormData] = useState({
     username: "",
@@ -39,9 +43,42 @@ export default function RegisterPage() {
     general: "",
   });
 
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false)
 
-  const validateForm = () => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target
+    setFormData((prev) => ({ ...prev, [id]: value }))
+    setFormErrors((prev) => ({ ...prev, [id]: "" }))
+  }
+
+  const postRegistrationData = async(userData:UserData) => {
+    const response = await axiosInstance.post(
+      "/api/auth/register",
+      userData
+    )
+    console.log("regiser response", response);
+    return response.data;
+
+  }
+
+  const postRegistrationDataMutation = useMutation({
+    mutationFn: postRegistrationData,
+    onSuccess: () => {
+      toast.success("Registration Successfully Done!")
+      navigate.push("/login")
+      queryClient.invalidateQueries({
+        queryKey: ["userData"]
+      });
+    },
+    onError: (error) => {
+      toast.error("Something Went Wrong!")
+      console.error(error);
+    },
+  })
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+
     const errors = {
       username: "",
       password: "",
@@ -53,84 +90,46 @@ export default function RegisterPage() {
       errors.username = "Username is required";
     }
 
-    if (!formData.password) {
-      errors.password = "Password is required";
-    } else if (formData.password.length < 8) {
-      errors.password = "Password must be at least 8 characters";
+    if(formData.username.length < 6){
+      errors.username="Username must be at least 6 characters"
     }
 
-    if (!formData.confirmPassword) {
-      errors.confirmPassword = "Please confirm your password";
-    } else if (formData.password !== formData.confirmPassword) {
-      errors.confirmPassword = "Passwords do not match";
+    if(formData.username.length > 18){
+      errors.username="Username must be in 18 characters"
     }
 
-    return errors;
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { id, value } = e.target;
-    setFormData((prev) => ({ ...prev, [id]: value }));
-    // Clear errors when user types
-    setFormErrors((prev) => ({ ...prev, [id]: "", general: "" }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    // Reset errors
-    setFormErrors({ username: "", password: "", confirmPassword: "", general: "" });
-
-    // Validate form
-    const validationErrors = validateForm();
-    if (Object.values(validationErrors).some(error => error !== "")) {
-      setFormErrors(validationErrors);
-      setIsLoading(false);
-      return;
+    if (formData.password.length < 6) {
+      errors.password = "Password must be at least 6 characters"
     }
+    
+
+    if (formData.password !== formData.confirmPassword) {
+      errors.confirmPassword = "Passwords do not match"
+    }
+
+    const hasErrors = Object.values(errors).some((err) => err !== "")
+    if (hasErrors) {
+      setFormErrors(errors)
+      return
+    }
+
+    setIsLoading(true)
 
     try {
-      const response = await axiosInstance.post("/api/auth/register", {
-        username: formData.username,
-        password: formData.password,
-      });
-
-      if (response.status === 201) {
-        toast({
-          title: "Registration successful",
-          description: "Please log in with your new account",
-          variant: "default",
-        });
-        router.push("/login");
-      }
+      await postRegistrationDataMutation.mutate(formData);
     } catch (error) {
-      if (error instanceof AxiosError) {
-        const errorData = error.response?.data;
-        
-        if (errorData?.errors) {
-          setFormErrors(prev => ({
-            ...prev,
-            ...errorData.errors,
-            general: errorData.message || "Registration failed"
-          }));
-        } else {
-          setFormErrors(prev => ({
-            ...prev,
-            general: errorData?.message || "An unexpected error occurred"
-          }));
-        }
-
-        toast({
-          title: "Registration failed",
-          description: errorData?.message || "Please check your input and try again",
-          variant: "destructive",
-        });
-      }
-    } finally {
-      setIsLoading(false);
+      toast.error("Something Went Wrong!")
+      console.log(error);
+    }finally{
+      setIsLoading(false)
     }
-  };
+
+    // Simulate registration process
+    // setTimeout(() => {
+    //   setIsLoading(false)
+    //   console.log("Form submitted", formData)
+    // }, 1500)
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#1a1a2e] to-[#121225] p-4">
