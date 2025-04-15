@@ -117,7 +117,7 @@ export default function GlassWheelList({ wheels, selectedWheel, onSelectWheel }:
 
             {/* Footer */}
             <div className="mt-4 pt-4 border-t border-white/10">
-              <p className="text-xs text-gray-400">Total wheels: {wheels.length}</p>
+              <p className="text-xs text-gray-400">Total Prizes: {wheels.length}</p>
             </div>
           </div>
         </div>
