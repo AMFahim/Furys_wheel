@@ -11,7 +11,6 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "Fury's Wheel - Spin & Win",
   description: "Spin the wheel and test your luck with Fury's Wheel of prizes",
-    generator: 'v0.dev'
 }
 
 export default function RootLayout({
