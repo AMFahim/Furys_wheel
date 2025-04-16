@@ -10,3 +10,8 @@ export const WheelSchema = z.object({
   name: z.string().min(1),
   wheelOption: z.array(WheelOptionSchema),
 });
+
+export const updateWheelSchema = z.object({
+  name: z.string().min(1).optional(),
+  wheelOption: z.array(WheelOptionSchema).optional(),
+});
