@@ -66,7 +66,7 @@ export default function GlassWheelList({ wheels, selectedWheel, onSelectWheel }:
             {/* Wheel List */}
             <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
               <AnimatePresence>
-                {wheels.map((wheel) => (
+                {wheels && wheels?.map((wheel, i) => (
                   <motion.div
                     key={wheel.id}
                     initial={{ opacity: 0, y: 20 }}
@@ -86,13 +86,18 @@ export default function GlassWheelList({ wheels, selectedWheel, onSelectWheel }:
                     <div className="flex items-center gap-3">
                       {/* Wheel Icon/Indicator */}
                       <div
-                        className={`
+                      //   className={`
+                      //   w-10 h-10 rounded-full flex items-center justify-center
+                      //   bg-gradient-to-br ${getThemeGradient(wheel.theme)}
+                      // `}
+
+                      className={`
                         w-10 h-10 rounded-full flex items-center justify-center
-                        bg-gradient-to-br ${getThemeGradient(wheel.theme)}
+                        bg-gradient-to-br from-purple-500 to-violet-600
                       `}
                       >
                         <div className="w-6 h-6 rounded-full bg-black/30 flex items-center justify-center text-xs font-bold">
-                          {wheel.prizes}
+                          {i+1}
                         </div>
                       </div>
 
@@ -117,7 +122,7 @@ export default function GlassWheelList({ wheels, selectedWheel, onSelectWheel }:
 
             {/* Footer */}
             <div className="mt-4 pt-4 border-t border-white/10">
-              <p className="text-xs text-gray-400">Total Prizes: {wheels.length}</p>
+              <p className="text-xs text-gray-400">Total Prizes: {wheels?.length}</p>
             </div>
           </div>
         </div>

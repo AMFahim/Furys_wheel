@@ -5,68 +5,24 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { Search, Filter } from "lucide-react"
+import { Search, Filter, Loader2 } from "lucide-react"
 import { useEffect } from "react"
 import { useUser } from "@/providers/UserContext"
 
 export default function UsersPage() {
-  const {allUsersData, setFetchAllUserData} = useUser()
-  const users = [
-    {
-      id: 1,
-      name: "Alex Johnson",
-      email: "alex@example.com",
-      status: "active",
-      spins: 45,
-      joined: "2023-10-15",
-      avatar: "/placeholder.svg?height=40&width=40",
-      initials: "AJ",
-    },
-    {
-      id: 2,
-      name: "Sarah Miller",
-      email: "sarah@example.com",
-      status: "active",
-      spins: 32,
-      joined: "2023-10-18",
-      avatar: "/placeholder.svg?height=40&width=40",
-      initials: "SM",
-    },
-    {
-      id: 3,
-      name: "James Wilson",
-      email: "james@example.com",
-      status: "active",
-      spins: 28,
-      joined: "2023-10-20",
-      avatar: "/placeholder.svg?height=40&width=40",
-      initials: "JW",
-    },
-    {
-      id: 4,
-      name: "Emma Davis",
-      email: "emma@example.com",
-      status: "inactive",
-      spins: 12,
-      joined: "2023-10-25",
-      avatar: "/placeholder.svg?height=40&width=40",
-      initials: "ED",
-    },
-    {
-      id: 5,
-      name: "Michael Brown",
-      email: "michael@example.com",
-      status: "active",
-      spins: 19,
-      joined: "2023-10-28",
-      avatar: "/placeholder.svg?height=40&width=40",
-      initials: "MB",
-    },
-  ]
+  const {allUsersData, setFetchAllUserData, wheelDataLoading} = useUser()
 
   useEffect(()=> {
     setFetchAllUserData(true)
   },[])
+
+
+
+  if(wheelDataLoading){
+    <div className="flex justify-center items-center h-screen">
+    <div className="rounded-full h-20 w-20 bg-violet-800 animate-ping"></div>
+  </div>
+  }
 
 
 

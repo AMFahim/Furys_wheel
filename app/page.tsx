@@ -4,12 +4,18 @@ import { Button } from "../components/ui/button"
 import WheelItemsList from "@/components/WheelItemsList"
 import GlassWinnersList from "@/components/Glass-winner-list"
 import GlassWheelList from "@/components/WheelItemsList"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link";
 import { Toaster } from "sonner";
+import { useUser } from "@/providers/UserContext";
 
 export default function Home() {
+  const {allWheelData, setFetchAllWheelData} = useUser()
   const [selectedWheel, setSelectedWheel] = useState<string | null>(null)
+
+  useEffect(() => {
+    setFetchAllWheelData(true);
+  },[])
 
   const wheels = [
     { id: "fortune-wheel", name: "Fortune Wheel", prizes: 8, theme: "gold" },
@@ -64,7 +70,7 @@ export default function Home() {
     <>
      <main className="flex min-h-screen bg-gradient-to-br from-[#0a0a1a] to-[#1a1a3a]">
       {/* Glass Wheel List Component (Left Sidebar) */}
-      <GlassWheelList wheels={wheels} selectedWheel={selectedWheel} onSelectWheel={setSelectedWheel} />
+      <GlassWheelList wheels={allWheelData} selectedWheel={selectedWheel} onSelectWheel={setSelectedWheel} />
 
       {/* Main Content Area */}
       <div className="flex-1 p-8 flex flex-col items-center justify-center">
@@ -88,7 +94,6 @@ export default function Home() {
 
       {/* Glass Winners List Component (Right Sidebar) */}
       <GlassWinnersList winners={winners} />
-      <Toaster/>
     </main>
     </>
   )

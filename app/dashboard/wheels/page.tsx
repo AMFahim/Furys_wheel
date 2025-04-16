@@ -1,28 +1,46 @@
+"use client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Plus, Pencil, Trash2 } from "lucide-react"
 import { WheelForm } from "@/components/admin/wheel-form"
+import { useUser } from "@/providers/UserContext"
+import { useEffect, useState } from "react"
 
 export default function WheelsPage() {
+  const {setFetchAllWheelData, allWheelData} = useUser();
+  const [isWheelFormDisplay, setIsWheelFormDisplay] = useState(false);
+
+  useEffect(() => {
+    setFetchAllWheelData(true);
+  }, [])
+
+  if(allWheelData){
+    console.log("all wheel data", allWheelData);
+
+  }
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Manage Wheels</h1>
-        <Button className="bg-[#6c3cb9] hover:bg-[#5c2ca9]">
+        <Button className="bg-[#6c3cb9] hover:bg-[#5c2ca9]" onClick={() => setIsWheelFormDisplay(true)}>
           <Plus className="h-4 w-4 mr-2" />
           Add New Wheel
         </Button>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <Card className="bg-[#252547] border-0">
+
+        {
+          allWheelData && allWheelData?.map((wheel:any, index: number) => 
+
+            <Card key={index} className="bg-[#252547] border-0">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center justify-between">
-              <span>Fortune Wheel</span>
+              <span>{wheel.name}</span>
               <div className="flex gap-2">
-                <Button variant="ghost" size="icon" className="h-8 w-8">
+                {/* <Button variant="ghost" size="icon" className="h-8 w-8">
                   <Pencil className="h-4 w-4" />
-                </Button>
+                </Button> */}
                 <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500">
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -37,26 +55,37 @@ export default function WheelsPage() {
               </div>
               <div className="flex justify-between text-sm">
                 <span>Prizes:</span>
-                <span>8</span>
+                <span>{wheel?.wheelOption?.length}</span>
               </div>
-              <div className="flex justify-between text-sm">
+              {/* <div className="flex justify-between text-sm">
                 <span>Total Spins:</span>
                 <span>1,245</span>
-              </div>
+              </div> */}
               <div className="mt-4">
                 <div className="text-xs mb-1">Prize Distribution</div>
                 <div className="w-full h-4 bg-[#1e1e38] rounded-full overflow-hidden flex">
-                  <div className="bg-[#4361ee] h-full" style={{ width: "40%" }}></div>
-                  <div className="bg-[#6c3cb9] h-full" style={{ width: "25%" }}></div>
+
+                  {
+                    wheel?.wheelOption?.map((segment:any, index:number) => 
+                      <div className={` h-full`} style={{ width: `${segment.percentage}%`,     backgroundColor: segment.colour
+                  }}></div>
+                    )
+                  }
+                  {/* <div className="bg-[#6c3cb9] h-full" style={{ width: "25%" }}></div>
                   <div className="bg-[#ffd700] h-full" style={{ width: "20%" }}></div>
-                  <div className="bg-[#e63946] h-full" style={{ width: "15%" }}></div>
+                  <div className="bg-[#e63946] h-full" style={{ width: "15%" }}></div> */}
                 </div>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-[#252547] border-0">
+          )
+        }
+
+       
+
+        {/* <Card className="bg-[#252547] border-0">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center justify-between">
               <span>Mystery Spinner</span>
@@ -136,17 +165,20 @@ export default function WheelsPage() {
               </div>
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
       </div>
-
-      <Card className="bg-[#252547] border-0">
-        <CardHeader>
-          <CardTitle>Add/Edit Wheel</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <WheelForm />
-        </CardContent>
-      </Card>
+{
+  isWheelFormDisplay &&   <Card className="bg-[#252547] border-0">
+  <CardHeader>
+    <CardTitle>Add/Edit Wheel</CardTitle>
+  </CardHeader>
+  <CardContent>
+    
+    <WheelForm setIsWheelFormDisplay={setIsWheelFormDisplay}/>
+  </CardContent>
+</Card>
+}
+    
     </div>
   )
 }

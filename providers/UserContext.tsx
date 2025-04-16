@@ -16,6 +16,9 @@ type UserContextType = {
   setFetchDiscordUser: (value: boolean) => void;
   setFetchAllUserData:(value: boolean) => void;
   allUsersData:any;
+  setFetchAllWheelData:(value: boolean) => void;
+  allWheelData:any;
+  wheelDataLoading:any
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -24,6 +27,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<JwtPayload | null>(null);
   const [fetchDiscordUser, setFetchDiscordUser] = useState(false);
   const [fetchAllUsersData, setFetchAllUserData] = useState(false);
+  const [fetchAllWheelData, setFetchAllWheelData] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
 
@@ -87,9 +91,34 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     enabled: fetchAllUsersData,
   });
 
+
+  const { data: allWheelData, isLoading: wheelDataLoading } = useQuery({
+    queryKey: ["allWheelData"],
+    queryFn: async () => {
+      try {
+        const response = await axiosInstance.get("/api/admin/wheel");
+        console.log("all wheel data response", response);
+        return response.data;
+      } catch (error) {
+        const errorDetails = handleAxiosError(error as AxiosError);
+        toast({
+          title: "All wheel Data Fetch Failed",
+          description: errorDetails.message,
+          variant: "destructive",
+        });
+
+        if (errorDetails.redirect) {
+          router.push(errorDetails.redirect);
+        }
+        return null;
+      }
+    },
+    enabled: fetchAllWheelData,
+  });
+
   return (
     <UserContext.Provider
-      value={{ user, setUser, discordData, setFetchDiscordUser, setFetchAllUserData, allUsersData }}
+      value={{ user, setUser, discordData, setFetchDiscordUser, setFetchAllUserData, allUsersData, allWheelData, setFetchAllWheelData, wheelDataLoading }}
     >
       {children}
     </UserContext.Provider>

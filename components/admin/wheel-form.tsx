@@ -131,7 +131,7 @@
 
 "use client"
 
-import { useState } from "react"
+import { Dispatch, SetStateAction, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -139,8 +139,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "sonner"
 import axiosInstance from "@/utils/axiosInstance"
 
-export function WheelForm() {
+type PropsType = {
+  setIsWheelFormDisplay: Dispatch<SetStateAction<boolean>>
+}
+
+export function WheelForm({setIsWheelFormDisplay}: PropsType) {
   const [wheelName, setWheelName] = useState("")
+  const [isLoading, setIsLoading] = useState(false);
   const [prizes, setPrizes] = useState(
     Array.from({ length: 8 }, (_, i) => ({
       name: `Prize ${i + 1}`,
@@ -186,35 +191,78 @@ export function WheelForm() {
   //   console.log("Form Submitted:", formData)
   // }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+  // const handleSubmit = (e: React.FormEvent) => {
+  //   e.preventDefault()
   
-    // Construct the wheel options with the required format
-    const wheelOptions = prizes.map(prize => ({
-      name: prize.name,
-      percentage: prize.percentage,
-      color: "#fff", // color is always #fff as per your specification
-    }))
+  //   // Construct the wheel options with the required format
+  //   const wheelOptions = prizes.map(prize => ({
+  //     name: prize.name,
+  //     percentage: prize.percentage,
+  //     color: "#fff", // color is always #fff as per your specification
+  //   }))
   
-    // Construct the formData
-    const formData = {
-      name: wheelName,
-      wheelOption: wheelOptions, // Map the prizes to wheelOption
-    }
+  //   // Construct the formData
+  //   const formData = {
+  //     name: wheelName,
+  //     wheelOption: wheelOptions, // Map the prizes to wheelOption
+  //   }
 
-    const response = axiosInstance.post("/api/admin/wheel", formData);
-    console.log("response of wheel createiong", response);
+  //   const response = axiosInstance.post("/api/admin/wheel", formData);
+  //   console.log("response of wheel createiong", response);
+  
+  //   // Validate total percentage
+  //   const totalpercentage = prizes.reduce((sum, prize) => sum + prize.percentage, 0)
+  //   if (totalpercentage !== 100) {
+  //     toast.error("Total percentage must equal 100%")
+  //     return
+  //   }
+  
+  //   // Submit the data
+  //   console.log("Form Submitted:", formData)
+  // }
+
+
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
   
     // Validate total percentage
-    const totalpercentage = prizes.reduce((sum, prize) => sum + prize.percentage, 0)
+    const totalpercentage = prizes.reduce((sum, prize) => sum + prize.percentage, 0);
     if (totalpercentage !== 100) {
-      toast.error("Total percentage must equal 100%")
-      return
+      toast.error("Total percentage must equal 100%");
+      return;
     }
   
-    // Submit the data
-    console.log("Form Submitted:", formData)
-  }
+    // Generate unique colors (you can improve this logic later)
+    const colors = ["#FF5733", "#33FF57", "#3357FF", "#F39C12", "#9B59B6", "#1ABC9C", "#E74C3C", "#2980B9"];
+  
+    const wheelOptions = prizes.map((prize, index) => ({
+      name: prize.name,
+      percentage: prize.percentage,
+      colour: colors[index % colors.length],
+    }));
+  
+    const formData = {
+      name: wheelName,
+      wheelOption: wheelOptions,
+    };
+
+    setIsLoading(true);
+  
+    try {
+      const response = await axiosInstance.post("/api/admin/wheel", formData);
+      console.log("Wheel Created:", response.data);
+      console.log("Submitted Data Format:", JSON.stringify(formData, null, 2));
+      toast.success("Wheel successfully created!");
+      setIsWheelFormDisplay(false);
+    } catch (error) {
+      console.error("Error creating wheel:", error);
+      toast.error("Something went wrong.");
+    }finally{
+      setIsLoading(false)
+    }
+  };
+  
   
 
   return (
@@ -285,11 +333,14 @@ export function WheelForm() {
       </Tabs>
 
       <div className="flex justify-end gap-2">
-        <Button type="button" variant="outline" onClick={() => console.log("Cancelled")}>
+        <Button type="button" variant="outline" onClick={() => setIsWheelFormDisplay(false)}>
           Cancel
         </Button>
         <Button type="submit" className="bg-[#6c3cb9] hover:bg-[#5c2ca9]">
-          Save Wheel
+          {
+            isLoading?"Saving...":"Save Wheel"
+          }
+         
         </Button>
       </div>
     </form>

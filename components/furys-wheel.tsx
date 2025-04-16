@@ -252,9 +252,9 @@ export default function FurysWheel() {
     const segmentCenter = prizeIndex * segmentAngle
     const randomOffset = (Math.random() * 0.6 + 0.2) * segmentAngle // Random position within 20%-80% of segment
     
-    // We need to negate the angle because the wheel spins clockwise
-    // The pointer is at the top (0 degrees in standard position)
-    return (360 - (segmentCenter + randomOffset)) % 360
+    // We need to adjust the angle so that the pointer lands on the correct segment
+    // Note that the wheel rotates clockwise
+    return segmentCenter + randomOffset
   }
   
   const determineWinningPrize = (finalRotation: number): Prize => {
@@ -264,8 +264,12 @@ export default function FurysWheel() {
     // Normalize the rotation to 0-360 degrees
     const normalizedRotation = finalRotation % 360
     
-    // Calculate which segment the pointer is pointing to
-    // We subtract from 360 because the wheel rotates clockwise but our segments are numbered counterclockwise
+    // The wheel spins clockwise, but the pointer is fixed at the top
+    // When the wheel stops, the segment at the top is the winner
+    // We need to find which segment is at the top (0 degrees) when the wheel stops
+    
+    // Convert rotation to prize index
+    // This works because rotation increases clockwise but prizes are laid out counterclockwise
     const segmentIndex = Math.floor((360 - normalizedRotation) / segmentAngle) % prizes.length
     
     return prizes[segmentIndex]
@@ -299,7 +303,7 @@ export default function FurysWheel() {
     setTimeout(() => {
       setIsSpinning(false)
       
-      // Double-check which prize the pointer is actually pointing to
+      // Check which prize the pointer is actually pointing to
       const winningPrize = determineWinningPrize(finalRotation)
       setWinner(winningPrize)
 
@@ -310,6 +314,14 @@ export default function FurysWheel() {
       }, 500)
     }, 5000)
   }
+
+  // For debugging purposes
+  useEffect(() => {
+    if (!isSpinning && winner) {
+      console.log(`Final rotation: ${rotation % 360}°`);
+      console.log(`Winner: ${winner.wheelName}`);
+    }
+  }, [isSpinning, winner, rotation]);
 
   // Visual segment size might be different from probability
   // For visual purposes, we'll keep equal segments visually
