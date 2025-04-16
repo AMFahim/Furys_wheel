@@ -4,6 +4,7 @@ import { PrismaClient, userStatus } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { AxiosError } from "axios";
 import { handleAxiosError } from "@/utils/errorHandler";
+import { JwtPayload } from "jsonwebtoken";
 
 const prisma = new PrismaClient();
 
@@ -18,7 +19,7 @@ async function validateAdmin(request: NextRequest) {
     );
   }
 
-  const user = verifyToken(token);
+  const user = verifyToken(token) as JwtPayload | null;
   if (!user || user.role !== userStatus.ADMIN) {
     return NextResponse.json(
       { message: "Unauthorized access" },
