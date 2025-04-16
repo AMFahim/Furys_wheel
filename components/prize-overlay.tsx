@@ -13,9 +13,11 @@ type Prize = {
 type PrizeOverlayProps = {
   prize: Prize
   onClose: () => void
+  wheelName?: string // 👈 Add this line
+
 }
 
-export default function PrizeOverlay({ prize, onClose }: PrizeOverlayProps) {
+export default function PrizeOverlay({ prize, onClose, wheelName }: PrizeOverlayProps) {
   return (
     <motion.div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
@@ -69,7 +71,9 @@ export default function PrizeOverlay({ prize, onClose }: PrizeOverlayProps) {
             transition={{ delay: 0.4 }}
           >
             <p className="text-gray-400 mb-2">You&apos;ve won:</p>
-            <p className={`text-xl font-bold ${prize.textColor}`}>{prize.name}</p>
+            <p className={`text-xl font-bold ${prize.textColor}`}>{wheelName}</p>
+            {/* <p className={`text-xl font-bold ${prize.textColor}`}>{prize.name}</p> */}
+
           </motion.div>
 
           {/* Animated confetti effect */}
