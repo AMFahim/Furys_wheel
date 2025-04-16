@@ -139,3 +139,34 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const user = await roleGuard(userStatus.ADMIN);
+    if (user instanceof NextResponse) {
+      return user;
+    }
+
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
+
+    if (!id) {
+      return NextResponse.json({ message: "Id not found" }, { status: 404 });
+    }
+
+    const data = await prisma.wheel.delete({
+      where: { id },
+    });
+
+    return NextResponse.json({
+      message: "Wheel deleted successfully",
+      status: true,
+    });
+  } catch (error) {
+    const errorDetails = handleAxiosError(error as AxiosError);
+    return NextResponse.json(
+      { message: errorDetails.message, errors: errorDetails.errors },
+      { status: error instanceof AxiosError ? error.response?.status || 500 : 500 }
+    );
+  }
+} 
