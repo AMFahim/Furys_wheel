@@ -99,7 +99,7 @@ export default function GlassWheelList({ wheels, selectedWheel, onSelectWheel }:
                       {/* Wheel Info */}
                       <div>
                         <h3 className="font-medium">{wheel.name}</h3>
-                        <p className="text-xs text-gray-400">{wheel.prizes} prizes available</p>
+                        {/* <p className="text-xs text-gray-400">{wheel.prizes} prizes available</p> */}
                       </div>
                     </div>
 

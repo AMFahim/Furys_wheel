@@ -14,6 +14,8 @@ type UserContextType = {
   setUser: (user: JwtPayload | null) => void;
   discordData: any;
   setFetchDiscordUser: (value: boolean) => void;
+  setFetchAllUserData:(value: boolean) => void;
+  allUsersData:any;
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -21,6 +23,7 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<JwtPayload | null>(null);
   const [fetchDiscordUser, setFetchDiscordUser] = useState(false);
+  const [fetchAllUsersData, setFetchAllUserData] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
 
@@ -31,6 +34,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       setUser(userData);
     }
   }, []);
+
+  console.log("user info", user);
 
   const { data: discordData } = useQuery({
     queryKey: ["discordData"],
@@ -55,9 +60,36 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     enabled: fetchDiscordUser,
   });
 
+
+
+
+  const { data: allUsersData } = useQuery({
+    queryKey: ["allUsersData"],
+    queryFn: async () => {
+      try {
+        const response = await axiosInstance.get("/api/admin/user");
+        console.log("all users data response", response);
+        return response.data;
+      } catch (error) {
+        const errorDetails = handleAxiosError(error as AxiosError);
+        toast({
+          title: "All User Data Fetch Failed",
+          description: errorDetails.message,
+          variant: "destructive",
+        });
+
+        if (errorDetails.redirect) {
+          router.push(errorDetails.redirect);
+        }
+        return null;
+      }
+    },
+    enabled: fetchAllUsersData,
+  });
+
   return (
     <UserContext.Provider
-      value={{ user, setUser, discordData, setFetchDiscordUser }}
+      value={{ user, setUser, discordData, setFetchDiscordUser, setFetchAllUserData, allUsersData }}
     >
       {children}
     </UserContext.Provider>

@@ -1,3 +1,4 @@
+"use client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -5,8 +6,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Search, Filter } from "lucide-react"
+import { useEffect } from "react"
+import { useUser } from "@/providers/UserContext"
 
 export default function UsersPage() {
+  const {allUsersData, setFetchAllUserData} = useUser()
   const users = [
     {
       id: 1,
@@ -60,6 +64,12 @@ export default function UsersPage() {
     },
   ]
 
+  useEffect(()=> {
+    setFetchAllUserData(true)
+  },[])
+
+
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -100,14 +110,14 @@ export default function UsersPage() {
           <TableHeader className="bg-[#252547]">
             <TableRow className="hover:bg-[#2a2a4e] border-[#3a3a5e]">
               <TableHead className="text-white">User</TableHead>
-              <TableHead className="text-white">Status</TableHead>
-              <TableHead className="text-white">Total Spins</TableHead>
-              <TableHead className="text-white">Joined Date</TableHead>
+              <TableHead className="text-white">User type</TableHead>
+              {/* <TableHead className="text-white">Total Spins</TableHead>
+              <TableHead className="text-white">Joined Date</TableHead> */}
               <TableHead className="text-white text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {users.map((user) => (
+            {allUsersData?.data && allUsersData.data.map((user: any, index:number) => (
               <TableRow key={user.id} className="hover:bg-[#2a2a4e] border-[#3a3a5e]">
                 <TableCell className="font-medium">
                   <div className="flex items-center gap-3">
@@ -116,16 +126,16 @@ export default function UsersPage() {
                       <AvatarFallback className="bg-[#4361ee]">{user.initials}</AvatarFallback>
                     </Avatar>
                     <div>
-                      <div>{user.name}</div>
-                      <div className="text-xs text-muted-foreground">{user.email}</div>
+                      <div>{user.authType==="local"?user.username:user.discordUsername}</div>
+                      {/* <div className="text-xs text-muted-foreground">{user.email}</div> */}
                     </div>
                   </div>
                 </TableCell>
                 <TableCell>
-                  <Badge className={user.status === "active" ? "bg-green-500" : "bg-gray-500"}>{user.status}</Badge>
+                  <div>{user.authType}</div>
                 </TableCell>
-                <TableCell>{user.spins}</TableCell>
-                <TableCell>{user.joined}</TableCell>
+                {/* <TableCell>{user.spins}</TableCell>
+                <TableCell>{user.joined}</TableCell> */}
                 <TableCell className="text-right">
                   <Button variant="ghost" size="sm">
                     View
@@ -137,26 +147,7 @@ export default function UsersPage() {
         </Table>
       </div>
 
-      <div className="flex items-center justify-between">
-        <div className="text-sm text-muted-foreground">Showing 5 of 100 users</div>
-        <div className="flex gap-1">
-          <Button variant="outline" size="sm" disabled>
-            Previous
-          </Button>
-          <Button variant="outline" size="sm" className="bg-[#3a3a5e]">
-            1
-          </Button>
-          <Button variant="outline" size="sm">
-            2
-          </Button>
-          <Button variant="outline" size="sm">
-            3
-          </Button>
-          <Button variant="outline" size="sm">
-            Next
-          </Button>
-        </div>
-      </div>
+   
     </div>
   )
 }

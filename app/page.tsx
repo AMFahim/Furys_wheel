@@ -6,6 +6,7 @@ import GlassWinnersList from "@/components/Glass-winner-list"
 import GlassWheelList from "@/components/WheelItemsList"
 import { useState } from "react"
 import Link from "next/link";
+import { Toaster } from "sonner";
 
 export default function Home() {
   const [selectedWheel, setSelectedWheel] = useState<string | null>(null)
@@ -87,6 +88,7 @@ export default function Home() {
 
       {/* Glass Winners List Component (Right Sidebar) */}
       <GlassWinnersList winners={winners} />
+      <Toaster/>
     </main>
     </>
   )

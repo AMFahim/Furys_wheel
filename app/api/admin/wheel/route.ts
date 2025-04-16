@@ -9,8 +9,10 @@ import { JwtPayload } from "jsonwebtoken";
 const prisma = new PrismaClient();
 
 async function validateAdmin(request: NextRequest) {
-  const authHeader = request.headers.get("authorization");
-  const token = authHeader?.split(" ")[1];
+  // const authHeader = request.headers.get("authorization");
+  // const token = authHeader?.split(" ")[1];
+  const token = request.cookies.get("token")?.value;
+
 
   if (!token) {
     return NextResponse.json(
