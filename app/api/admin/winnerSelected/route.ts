@@ -9,30 +9,9 @@ import { AxiosError } from "axios";
 import { handleAxiosError } from "@/utils/errorHandler";
 import { JwtPayload } from "jsonwebtoken";
 import { getUserFromToken } from "@/lib/JwtUser";
+import { roleGuard } from "@/lib/roleGuard";
 
 const prisma = new PrismaClient();
-
-async function validateAdmin(request: NextRequest) {
-  const authHeader = request.headers.get("authorization");
-  const token = authHeader?.split(" ")[1];
-
-  if (!token) {
-    return NextResponse.json(
-      { message: "Authentication required" },
-      { status: 401 }
-    );
-  }
-
-  const user = verifyToken(token) as JwtPayload | null;
-  if (!user || user.role !== userStatus.ADMIN) {
-    return NextResponse.json(
-      { message: "Unauthorized access" },
-      { status: 403 }
-    );
-  }
-
-  return user;
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -77,7 +56,7 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const user = await validateAdmin(request);
+    const user = await roleGuard(userStatus.ADMIN);
     if (user instanceof NextResponse) {
       return user;
     }
