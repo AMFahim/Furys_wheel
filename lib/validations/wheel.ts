@@ -13,5 +13,6 @@ export const WheelSchema = z.object({
 
 export const updateWheelSchema = z.object({
   name: z.string().min(1).optional(),
+  status: z.enum(['PENDING', 'APPROVED']).optional(),
   wheelOption: z.array(WheelOptionSchema).optional(),
 });

@@ -1,6 +1,6 @@
 import { verifyToken } from "@/lib/auth";
 import { updateWheelSchema, WheelSchema } from "@/lib/validations/wheel";
-import { PrismaClient, userStatus } from "@prisma/client";
+import { PrismaClient, userStatus, wheelStatus } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { AxiosError } from "axios";
 import { handleAxiosError } from "@/utils/errorHandler";
@@ -77,6 +77,15 @@ export async function PUT(request: NextRequest) {
 
     const { wheelOption, ...rest } = result.data;
 
+    if (rest.status === "APPROVED") {
+      await prisma.wheel.updateMany({
+        where: { id: { not: id } },
+        data: {
+          status: wheelStatus.PENDING,
+        },
+      });
+    }
+
     const updatedWheel = await prisma.wheel.update({
       where: { id },
       data: {
@@ -125,7 +134,12 @@ export async function GET(request: NextRequest) {
       return user;
     }
 
+    const { searchParams } = new URL(request.url);
+    const status = searchParams.get("status") as wheelStatus;
     const data = await prisma.wheel.findMany({
+      where: {
+        status: status ? status : undefined,
+      },
       include: {
         wheelOption: true,
       },
