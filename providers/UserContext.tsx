@@ -24,7 +24,7 @@ type UserContextType = {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<JwtPayload | null>(null);
+  const [user, setUser] = useState<any | null>(null);
   const [fetchDiscordUser, setFetchDiscordUser] = useState(false);
   const [fetchAllUsersData, setFetchAllUserData] = useState(false);
   const [fetchAllWheelData, setFetchAllWheelData] = useState(false);
@@ -38,6 +38,22 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       setUser(userData);
     }
   }, []);
+
+  // useEffect(() => {
+  //   const token = getAuthToken();
+  //   if (token) {
+  //     // Option 1: Using async IIFE
+  //     (async () => {
+  //       const userData = await verifyToken(token);
+  //       setUser(userData);
+  //     })();
+      
+  //     // OR Option 2: Using .then()
+  //     // verifyToken(token).then(userData => {
+  //     //   setUser(userData);
+  //     // });
+  //   }
+  // }, []);
 
   console.log("user info", user);
 
