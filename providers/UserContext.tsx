@@ -32,21 +32,31 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
 
   const fetchUserData = async() => {
+   try {
     const res = await axiosInstance.get("/api/auth/userData");
-    console.log("feth usr response ", res);
+   if(res.data.data){
+    setUser(res.data.data)
+   }
+   } catch (error) {
+    console.log(error)
+   }
   }
 
   useEffect(() => {
-    // const token = getAuthToken();
-    // console.log("user token", token);
-    // if (token) {
-    //   const userData = verifyToken(token);
-    //   setUser(userData);
-    // }
-
     fetchUserData();
   }, []);
 
+
+// useEffect(() => {
+//     // const token = getAuthToken();
+//     // console.log("user token", token);
+//     // if (token) {
+//     //   const userData = verifyToken(token);
+//     //   setUser(userData);
+//     // }
+
+//     fetchUserData();
+//   }, []);
 
   console.log("user info", user);
 
