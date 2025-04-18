@@ -1,14 +1,16 @@
 "use client";
+import FurysWheel from "@/components/furys-wheel";
+
+import GlassWinnersList from "@/components/Glass-winner-list";
+import GlassWheelList from "@/components/WheelItemsList";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Toaster } from "sonner";
+
 import { useUser } from "@/providers/UserContext";
-import FurysWheel from "@/components/furys-wheel";
 
 export default function Home() {
   const { allWheelData, setFetchAllWheelData, user } = useUser();
   const [selectedWheel, setSelectedWheel] = useState<string | null>(null);
-
   useEffect(() => {
     setFetchAllWheelData(true);
   }, []);
@@ -113,28 +115,12 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen bg-gradient-to-br from-[#0a0a1a] to-[#1a1a3a]">
-      {/* Left sidebar - Wheel List */}
-      <div className="w-64 p-4 bg-[#1a1a3a]/50 backdrop-blur-md border-r border-[#2d2d5a] overflow-y-auto">
-        <h2 className="text-xl font-bold mb-4 text-purple-400">Wheels</h2>
-        <div className="space-y-2">
-          {allWheelData?.map((wheel: any) => (
-            <div
-              key={wheel.id}
-              className={`p-3 rounded-lg cursor-pointer transition-colors ${
-                selectedWheel === wheel.id
-                  ? "bg-purple-900/30 border border-purple-500"
-                  : "hover:bg-[#2d2d5a]/50"
-              }`}
-              onClick={() => setSelectedWheel(wheel.id)}
-            >
-              <h3 className="font-medium text-white">{wheel.name}</h3>
-              <p className="text-sm text-gray-400">{wheel.prizes} prizes</p>
-            </div>
-          ))}
-        </div>
-      </div>
+      <GlassWheelList
+        wheels={allWheelData}
+        selectedWheel={selectedWheel}
+        onSelectWheel={setSelectedWheel}
+      />
 
-      {/* Main content */}
       <div className="flex-1 p-8 flex flex-col items-center justify-center">
         <div className="text-center mb-12">
           <h1 className="text-5xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">
@@ -149,7 +135,6 @@ export default function Home() {
           <FurysWheel />
         </div>
 
-        {/* User avatar/button */}
         <div className="absolute top-4 right-4">
           {user?.role ? (
             <div className="relative group">
@@ -200,28 +185,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Right sidebar - Winners List */}
-      <div className="w-64 p-4 bg-[#1a1a3a]/50 backdrop-blur-md border-l border-[#2d2d5a] overflow-y-auto">
-        <h2 className="text-xl font-bold mb-4 text-purple-400">
-          Recent Winners
-        </h2>
-        <div className="space-y-3">
-          {winners.map((winner) => (
-            <div key={winner.id} className="p-3 bg-[#2d2d5a]/30 rounded-lg">
-              <div className="flex justify-between items-start">
-                <h3 className="font-medium text-white">{winner.name}</h3>
-                <span className="text-xs text-purple-400">
-                  {winner.timestamp}
-                </span>
-              </div>
-              <p className="text-sm text-gray-300">{winner.prize}</p>
-              <p className="text-xs text-gray-500">{winner.wheel}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <Toaster position="bottom-right" />
+      <GlassWinnersList winners={winners} />
     </main>
   );
 }
