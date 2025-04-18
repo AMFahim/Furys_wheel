@@ -10,9 +10,10 @@ import { Toaster } from "sonner";
 import { useUser } from "@/providers/UserContext";
 
 export default function Home() {
-  const {allWheelData, setFetchAllWheelData} = useUser()
+  const {allWheelData, setFetchAllWheelData, user} = useUser()
   const [selectedWheel, setSelectedWheel] = useState<string | null>(null)
-
+  console.log(user);
+  
   
 
   useEffect(() => {

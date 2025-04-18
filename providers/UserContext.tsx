@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useEffect,
+} from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
 import { handleAxiosError } from "@/utils/errorHandler";
@@ -14,11 +20,11 @@ type UserContextType = {
   setUser: (user: JwtPayload | null) => void;
   discordData: any;
   setFetchDiscordUser: (value: boolean) => void;
-  setFetchAllUserData:(value: boolean) => void;
-  allUsersData:any;
-  setFetchAllWheelData:(value: boolean) => void;
-  allWheelData:any;
-  wheelDataLoading:any
+  setFetchAllUserData: (value: boolean) => void;
+  allUsersData: any;
+  setFetchAllWheelData: (value: boolean) => void;
+  allWheelData: any;
+  wheelDataLoading: any;
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -31,12 +37,19 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const { toast } = useToast();
   const router = useRouter();
 
-  useEffect(() => {
-    const token = getAuthToken();
-    if (token) {
-      const userData = verifyToken(token);
-      setUser(userData);
+  const fetchUserData = async () => {
+    try {
+      const res = await axiosInstance.get("/api/auth/userData");
+      if (res.data.data) {
+        setUser(res.data.data);
+      }
+    } catch (error) {
+      console.log(error);
     }
+  };
+
+  useEffect(() => {
+    fetchUserData();
   }, []);
 
   // useEffect(() => {
@@ -47,7 +60,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   //       const userData = await verifyToken(token);
   //       setUser(userData);
   //     })();
-      
+
   //     // OR Option 2: Using .then()
   //     // verifyToken(token).then(userData => {
   //     //   setUser(userData);
@@ -80,9 +93,6 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     enabled: fetchDiscordUser,
   });
 
-
-
-
   const { data: allUsersData } = useQuery({
     queryKey: ["allUsersData"],
     queryFn: async () => {
@@ -106,7 +116,6 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     },
     enabled: fetchAllUsersData,
   });
-
 
   const { data: allWheelData, isLoading: wheelDataLoading } = useQuery({
     queryKey: ["allWheelData"],
@@ -134,7 +143,17 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <UserContext.Provider
-      value={{ user, setUser, discordData, setFetchDiscordUser, setFetchAllUserData, allUsersData, allWheelData, setFetchAllWheelData, wheelDataLoading }}
+      value={{
+        user,
+        setUser,
+        discordData,
+        setFetchDiscordUser,
+        setFetchAllUserData,
+        allUsersData,
+        allWheelData,
+        setFetchAllWheelData,
+        wheelDataLoading,
+      }}
     >
       {children}
     </UserContext.Provider>
