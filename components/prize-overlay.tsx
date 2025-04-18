@@ -31,8 +31,8 @@ export default function PrizeOverlay({
     try {
       // Create payload based on the data shown in your screenshot
       const payload = {
-        wheelName: "Mega Spin Wheel",
-        wheelReward: "Free Headphones",
+        wheelName: wheelName,
+        wheelReward: prize,
       };
 
       const response = await axiosInstance.post(

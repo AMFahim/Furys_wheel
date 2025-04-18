@@ -15,8 +15,9 @@ const prisma = new PrismaClient();
 
 export async function POST(request: NextRequest) {
   try {
+    // console.log("hello")
     const user = (await getUserFromToken()) as JwtPayload | null;
-    console.log(user, "Hello Boss");
+    // console.log(user, "Hello Boss");
     
     if (!user) {
       return NextResponse.json(
