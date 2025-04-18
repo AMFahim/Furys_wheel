@@ -14,8 +14,8 @@ import { userStatus } from "@prisma/client";
 const PROTECTED_ROUTES: Record<string, userStatus[]> = {
   "/profile": [userStatus.USER, userStatus.ADMIN],
   "/game": [userStatus.USER, userStatus.ADMIN],
-  "/admin": [userStatus.ADMIN],
-  "/api/admin": [userStatus.ADMIN],
+ // "/admin": [userStatus.ADMIN],
+ // "/api/admin": [userStatus.ADMIN],
 };
 
 export type JwtPayload = {
