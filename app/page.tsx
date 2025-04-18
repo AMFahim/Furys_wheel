@@ -1,24 +1,13 @@
 "use client";
-import FurysWheel from "@/components/furys-wheel";
-import { Button } from "../components/ui/button";
-import WheelItemsList from "@/components/WheelItemsList";
-import GlassWinnersList from "@/components/Glass-winner-list";
-import GlassWheelList from "@/components/WheelItemsList";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Toaster } from "sonner";
 import { useUser } from "@/providers/UserContext";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import FurysWheel from "@/components/furys-wheel";
 
 export default function Home() {
   const { allWheelData, setFetchAllWheelData, user } = useUser();
   const [selectedWheel, setSelectedWheel] = useState<string | null>(null);
-  // console.log(user);
 
   useEffect(() => {
     setFetchAllWheelData(true);
@@ -124,12 +113,28 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen bg-gradient-to-br from-[#0a0a1a] to-[#1a1a3a]">
-      <GlassWheelList
-        wheels={allWheelData}
-        selectedWheel={selectedWheel}
-        onSelectWheel={setSelectedWheel}
-      />
+      {/* Left sidebar - Wheel List */}
+      <div className="w-64 p-4 bg-[#1a1a3a]/50 backdrop-blur-md border-r border-[#2d2d5a] overflow-y-auto">
+        <h2 className="text-xl font-bold mb-4 text-purple-400">Wheels</h2>
+        <div className="space-y-2">
+          {allWheelData?.map((wheel: any) => (
+            <div
+              key={wheel.id}
+              className={`p-3 rounded-lg cursor-pointer transition-colors ${
+                selectedWheel === wheel.id
+                  ? "bg-purple-900/30 border border-purple-500"
+                  : "hover:bg-[#2d2d5a]/50"
+              }`}
+              onClick={() => setSelectedWheel(wheel.id)}
+            >
+              <h3 className="font-medium text-white">{wheel.name}</h3>
+              <p className="text-sm text-gray-400">{wheel.prizes} prizes</p>
+            </div>
+          ))}
+        </div>
+      </div>
 
+      {/* Main content */}
       <div className="flex-1 p-8 flex flex-col items-center justify-center">
         <div className="text-center mb-12">
           <h1 className="text-5xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">
@@ -144,63 +149,79 @@ export default function Home() {
           <FurysWheel />
         </div>
 
+        {/* User avatar/button */}
         <div className="absolute top-4 right-4">
           {user?.role ? (
-            <Popover>
-              <PopoverTrigger asChild>
-                <Avatar className="cursor-pointer border border-purple-500">
-                  {user.discordAvatar && (
-                    <AvatarImage src={user.discordAvatar} alt="User avatar" />
+            <div className="relative group">
+              <button className="cursor-pointer">
+                <div className="h-10 w-10 rounded-full border border-purple-500 overflow-hidden">
+                  {user.discordAvatar ? (
+                    <img
+                      src={user.discordAvatar}
+                      alt="User avatar"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-purple-900/20 text-purple-400">
+                      {getInitials(user.username)}
+                    </div>
                   )}
-                  <AvatarFallback className="bg-purple-900/20 text-purple-400">
-                    {getInitials(user.username)}
-                  </AvatarFallback>
-                </Avatar>
-              </PopoverTrigger>
-              <PopoverContent className="w-40 p-2 bg-[#1a1a3a] border border-purple-500">
+                </div>
+              </button>
+
+              <div className="absolute right-0 mt-2 w-40 bg-[#1a1a3a] border border-purple-500 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
                 {user.role === "ADMIN" ? (
                   <Link href="/dashboard">
-                    <Button
-                      variant="ghost"
-                      className="w-full text-left text-purple-400 hover:bg-purple-900/20"
-                    >
+                    <button className="w-full text-left px-4 py-2 text-purple-400 hover:bg-purple-900/20">
                       Dashboard
-                    </Button>
+                    </button>
                   </Link>
                 ) : (
                   <Link href="/profile">
-                    <Button
-                      variant="ghost"
-                      className="w-full text-left text-purple-400 hover:bg-purple-900/20"
-                    >
+                    <button className="w-full text-left px-4 py-2 text-purple-400 hover:bg-purple-900/20">
                       Profile
-                    </Button>
+                    </button>
                   </Link>
                 )}
                 <Link href="/logout">
-                  <Button
-                    variant="ghost"
-                    className="w-full text-left text-purple-400 hover:bg-purple-900/20"
-                  >
+                  <button className="w-full text-left px-4 py-2 text-purple-400 hover:bg-purple-900/20">
                     Logout
-                  </Button>
+                  </button>
                 </Link>
-              </PopoverContent>
-            </Popover>
+              </div>
+            </div>
           ) : (
             <Link href="/login">
-              <Button
-                variant="outline"
-                className="border-purple-500 text-purple-400 hover:bg-purple-900/20"
-              >
+              <button className="px-4 py-2 border border-purple-500 text-purple-400 rounded-md hover:bg-purple-900/20 transition-colors">
                 Login
-              </Button>
+              </button>
             </Link>
           )}
         </div>
       </div>
 
-      <GlassWinnersList winners={winners} />
+      {/* Right sidebar - Winners List */}
+      <div className="w-64 p-4 bg-[#1a1a3a]/50 backdrop-blur-md border-l border-[#2d2d5a] overflow-y-auto">
+        <h2 className="text-xl font-bold mb-4 text-purple-400">
+          Recent Winners
+        </h2>
+        <div className="space-y-3">
+          {winners.map((winner) => (
+            <div key={winner.id} className="p-3 bg-[#2d2d5a]/30 rounded-lg">
+              <div className="flex justify-between items-start">
+                <h3 className="font-medium text-white">{winner.name}</h3>
+                <span className="text-xs text-purple-400">
+                  {winner.timestamp}
+                </span>
+              </div>
+              <p className="text-sm text-gray-300">{winner.prize}</p>
+              <p className="text-xs text-gray-500">{winner.wheel}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <Toaster position="bottom-right" />
     </main>
   );
 }
