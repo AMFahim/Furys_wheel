@@ -13,6 +13,8 @@ export default function Home() {
   const {allWheelData, setFetchAllWheelData} = useUser()
   const [selectedWheel, setSelectedWheel] = useState<string | null>(null)
 
+  
+
   useEffect(() => {
     setFetchAllWheelData(true);
   },[])
@@ -82,7 +84,7 @@ export default function Home() {
         </div>
 
         <div>
-        <FurysWheel/>
+        <FurysWheel />
         </div>
 
         <Link href={"/login"} className="absolute top-4 right-4">

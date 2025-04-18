@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
+import Link from "next/link"
 
 type GiftType = {
   name: string
@@ -91,6 +92,8 @@ export function UserProfile({ username, avatarUrl, userRank, claimedGifts }: Use
             <div className="text-xs text-[#a0a0d9]">Coins</div>
           </div>
         </div>
+        <div className="text-center my-4"> <Link href="/"  > Go to Home Page, Spin and Win</Link></div>
+       
       </div>
     </Card>
   )
