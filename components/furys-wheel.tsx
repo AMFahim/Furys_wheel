@@ -5,6 +5,7 @@ import { ChevronRight } from "lucide-react"
 import WheelSegment from "./wheel-segment"
 import SpinButton from "./spin-button"
 import PrizeOverlay from "./prize-overlay"
+import { useUser } from "@/providers/UserContext"
 
 type Prize = {
   id: number
@@ -34,7 +35,7 @@ export default function FurysWheel({ forcedWinId }: { forcedWinId?: number }) {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const spinSoundRef = useRef<HTMLAudioElement | null>(null)
   const winSoundRef = useRef<HTMLAudioElement | null>(null)
-  
+    const { user } = useUser();
   const weightedPrizes = useRef(createWeightedPrizeList())
 
   useEffect(() => {
@@ -121,6 +122,10 @@ export default function FurysWheel({ forcedWinId }: { forcedWinId?: number }) {
   }
   
   const handleSpin = () => {
+    if (!user?.role || (user.role !== "ADMIN" && user.role !== "USER")) {
+      window.location.href = "/login";
+      return;
+    }
     if (isSpinning || prizes.length === 0) return
 
     audioRef.current && ((audioRef.current.currentTime = 0), audioRef.current.play())
