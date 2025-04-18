@@ -16,6 +16,8 @@ const prisma = new PrismaClient();
 export async function POST(request: NextRequest) {
   try {
     const user = (await getUserFromToken()) as JwtPayload | null;
+    console.log(user, "Hello Boss");
+    
     if (!user) {
       return NextResponse.json(
         { message: "Unauthorized access" },

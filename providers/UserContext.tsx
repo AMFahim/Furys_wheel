@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useEffect,
+} from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
 import { handleAxiosError } from "@/utils/errorHandler";
@@ -14,11 +20,11 @@ type UserContextType = {
   setUser: (user: JwtPayload | null) => void;
   discordData: any;
   setFetchDiscordUser: (value: boolean) => void;
-  setFetchAllUserData:(value: boolean) => void;
-  allUsersData:any;
-  setFetchAllWheelData:(value: boolean) => void;
-  allWheelData:any;
-  wheelDataLoading:any
+  setFetchAllUserData: (value: boolean) => void;
+  allUsersData: any;
+  setFetchAllWheelData: (value: boolean) => void;
+  allWheelData: any;
+  wheelDataLoading: any;
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -43,6 +49,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   }
 
   useEffect(() => {
+    fetchUserData();
     fetchUserData();
   }, []);
 
@@ -83,9 +90,6 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     enabled: fetchDiscordUser,
   });
 
-
-
-
   const { data: allUsersData } = useQuery({
     queryKey: ["allUsersData"],
     queryFn: async () => {
@@ -109,7 +113,6 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     },
     enabled: fetchAllUsersData,
   });
-
 
   const { data: allWheelData, isLoading: wheelDataLoading } = useQuery({
     queryKey: ["allWheelData"],
@@ -137,7 +140,17 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <UserContext.Provider
-      value={{ user, setUser, discordData, setFetchDiscordUser, setFetchAllUserData, allUsersData, allWheelData, setFetchAllWheelData, wheelDataLoading }}
+      value={{
+        user,
+        setUser,
+        discordData,
+        setFetchDiscordUser,
+        setFetchAllUserData,
+        allUsersData,
+        allWheelData,
+        setFetchAllWheelData,
+        wheelDataLoading,
+      }}
     >
       {children}
     </UserContext.Provider>

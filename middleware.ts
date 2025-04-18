@@ -14,6 +14,7 @@ import { userStatus } from "@prisma/client";
 const PROTECTED_ROUTES: Record<string, userStatus[]> = {
   "/profile": [userStatus.USER, userStatus.ADMIN],
   "/game": [userStatus.USER, userStatus.ADMIN],
+  "/dashboard": [userStatus.ADMIN],
   "/admin": [userStatus.ADMIN],
   "/api/admin": [userStatus.ADMIN],
 };
@@ -21,18 +22,18 @@ const PROTECTED_ROUTES: Record<string, userStatus[]> = {
 export type JwtPayload = {
   userId: string;
   username: string;
-  role: userStatus; // Adjust based on your system's roles
+  role: userStatus;
   discordUsername: string | null;
   discordAvatar: string | null;
-  iat: number; // Issued at timestamp
-  exp: number; // Expiration timestamp
+  iat: number;
+  exp: number;
 };
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
-  // Check if the path is protected
+  
   const protectedPath = Object.keys(PROTECTED_ROUTES).find((path) =>
     pathname.startsWith(path)
   );
