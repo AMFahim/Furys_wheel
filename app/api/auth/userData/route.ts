@@ -12,7 +12,16 @@ export async function GET() {
         if (!user) {
           return NextResponse.json({ message: "User not found" }, { status: 404 });
         }
-        return NextResponse.json({ data: user, message: "Users fetched successfully", status: true });
+
+        const data = await prisma.user.findUnique({
+            where: {
+                id: user.userId,
+            },
+            include: {
+                winPrize: true,
+            }
+        });
+        return NextResponse.json({ data, message: "Users fetched successfully", status: true });
     } catch (error) {
         const errorDetails = handleAxiosError(error as AxiosError);
         return NextResponse.json(
