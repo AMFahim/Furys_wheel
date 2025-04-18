@@ -7,9 +7,9 @@ export default function ProfilePage() {
   const { user } = useUser();
 
   if (!user) {
-    return null; // or a loading state
+    return null;
   }
-
+  console.log("user data", user);
   return (
     <main className="min-h-screen bg-[#1a1a2e] text-white p-4 flex items-center justify-center">
       <UserProfile

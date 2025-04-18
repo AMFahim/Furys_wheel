@@ -1,9 +1,16 @@
+"use client"
 import { Bell, Search } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { useUser } from "@/providers/UserContext"
 
 export function Header() {
+  const {user} = useUser();
+  if (!user) {
+    return null; // or a loading state
+  }
+  console.log("user data", user);
   return (
     <header className="h-16 border-b border-[#3a3a5e] bg-[#252547] px-6 flex items-center justify-between sticky top-0 z-10">
       <div className="relative w-64">

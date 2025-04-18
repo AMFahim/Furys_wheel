@@ -10,7 +10,7 @@ import { Toaster } from "sonner";
 import { useUser } from "@/providers/UserContext";
 
 export default function Home() {
-  const {allWheelData, setFetchAllWheelData} = useUser()
+  const {allWheelData, setFetchAllWheelData, user} = useUser()
   const [selectedWheel, setSelectedWheel] = useState<string | null>(null)
 
   useEffect(() => {
@@ -42,6 +42,8 @@ export default function Home() {
     { id: 9, name: "Daniel Anderson", prize: "200 Coins", wheel: "Fortune Wheel", timestamp: "40 mins ago" },
     { id: 10, name: "Isabella Thomas", prize: "Rare Item", wheel: "Mystery Spinner", timestamp: "45 mins ago" },
   ]
+
+  console.log("user data main", user);
   return (
     // <main className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-gray-900 via-indigo-950 to-black">
     //  <div className="flex justify-between">

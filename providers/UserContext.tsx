@@ -31,29 +31,22 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const { toast } = useToast();
   const router = useRouter();
 
+  const fetchUserData = async() => {
+    const res = await axiosInstance.get("/api/auth/userData");
+    console.log("feth usr response ", res);
+  }
+
   useEffect(() => {
-    const token = getAuthToken();
-    if (token) {
-      const userData = verifyToken(token);
-      setUser(userData);
-    }
+    // const token = getAuthToken();
+    // console.log("user token", token);
+    // if (token) {
+    //   const userData = verifyToken(token);
+    //   setUser(userData);
+    // }
+
+    fetchUserData();
   }, []);
 
-  // useEffect(() => {
-  //   const token = getAuthToken();
-  //   if (token) {
-  //     // Option 1: Using async IIFE
-  //     (async () => {
-  //       const userData = await verifyToken(token);
-  //       setUser(userData);
-  //     })();
-      
-  //     // OR Option 2: Using .then()
-  //     // verifyToken(token).then(userData => {
-  //     //   setUser(userData);
-  //     // });
-  //   }
-  // }, []);
 
   console.log("user info", user);
 

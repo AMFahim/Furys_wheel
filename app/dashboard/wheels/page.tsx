@@ -38,9 +38,9 @@ export default function WheelsPage() {
             <CardTitle className="flex items-center justify-between">
               <span>{wheel.name}</span>
               <div className="flex gap-2">
-                {/* <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Button variant="ghost" size="icon" className="h-8 w-8">
                   <Pencil className="h-4 w-4" />
-                </Button> */}
+                </Button>
                 <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500">
                   <Trash2 className="h-4 w-4" />
                 </Button>
