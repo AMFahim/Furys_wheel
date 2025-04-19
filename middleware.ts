@@ -12,6 +12,7 @@ import { userStatus } from "@prisma/client";
 // } as const;
 
 const PROTECTED_ROUTES: Record<string, userStatus[]> = {
+  "/" : [userStatus.USER, userStatus.ADMIN],
   "/profile": [userStatus.USER, userStatus.ADMIN],
   "/game": [userStatus.USER, userStatus.ADMIN],
   "/dashboard": [userStatus.ADMIN],
@@ -31,14 +32,21 @@ export type JwtPayload = {
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  console.log(pathname)
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
   
-  const protectedPath = Object.keys(PROTECTED_ROUTES).find((path) =>
-    pathname.startsWith(path)
+  const protectedPath = Object.keys(PROTECTED_ROUTES).find((path) =>{
+
+    // console.log(path)
+    return pathname.startsWith(path)
+  }
   );
 
+  console.log("protected path:",protectedPath);
   if (protectedPath) {
+
+  console.log("hello2")
     // const authHeader = request.headers.get('authorization');
     // console.log("auth header", authHeader);
     const token = request.cookies.get("token")?.value;
@@ -96,15 +104,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api/auth (auth endpoints)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public (public files)
-     */
-    "/((?!api/auth|_next/static|_next/image|favicon.ico|public).*)",
-  ],
+  matcher: Object.keys(PROTECTED_ROUTES).map((route) => `${route}/:path*`),
 };
