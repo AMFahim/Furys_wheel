@@ -1,25 +1,16 @@
 "use client";
 import FurysWheel from "@/components/furys-wheel";
-import { Button } from "../components/ui/button";
-import WheelItemsList from "@/components/WheelItemsList";
+
 import GlassWinnersList from "@/components/Glass-winner-list";
 import GlassWheelList from "@/components/WheelItemsList";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Toaster } from "sonner";
+
 import { useUser } from "@/providers/UserContext";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function Home() {
   const { allWheelData, setFetchAllWheelData, user } = useUser();
   const [selectedWheel, setSelectedWheel] = useState<string | null>(null);
-  // console.log(user);
-
   useEffect(() => {
     setFetchAllWheelData(true);
   }, []);
@@ -146,55 +137,49 @@ export default function Home() {
 
         <div className="absolute top-4 right-4">
           {user?.role ? (
-            <Popover>
-              <PopoverTrigger asChild>
-                <Avatar className="cursor-pointer border border-purple-500">
-                  {user.discordAvatar && (
-                    <AvatarImage src={user.discordAvatar} alt="User avatar" />
+            <div className="relative group">
+              <button className="cursor-pointer">
+                <div className="h-10 w-10 rounded-full border border-purple-500 overflow-hidden">
+                  {user.discordAvatar ? (
+                    <img
+                      src={user.discordAvatar}
+                      alt="User avatar"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-purple-900/20 text-purple-400">
+                      {getInitials(user.username)}
+                    </div>
                   )}
-                  <AvatarFallback className="bg-purple-900/20 text-purple-400">
-                    {getInitials(user.username)}
-                  </AvatarFallback>
-                </Avatar>
-              </PopoverTrigger>
-              <PopoverContent className="w-40 p-2 bg-[#1a1a3a] border border-purple-500">
+                </div>
+              </button>
+
+              <div className="absolute right-0 mt-2 w-40 bg-[#1a1a3a] border border-purple-500 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
                 {user.role === "ADMIN" ? (
                   <Link href="/dashboard">
-                    <Button
-                      variant="ghost"
-                      className="w-full text-left text-purple-400 hover:bg-purple-900/20"
-                    >
+                    <button className="w-full text-left px-4 py-2 text-purple-400 hover:bg-purple-900/20">
                       Dashboard
-                    </Button>
+                    </button>
                   </Link>
                 ) : (
                   <Link href="/profile">
-                    <Button
-                      variant="ghost"
-                      className="w-full text-left text-purple-400 hover:bg-purple-900/20"
-                    >
+                    <button className="w-full text-left px-4 py-2 text-purple-400 hover:bg-purple-900/20">
                       Profile
-                    </Button>
+                    </button>
                   </Link>
                 )}
                 <Link href="/logout">
-                  <Button
-                    variant="ghost"
-                    className="w-full text-left text-purple-400 hover:bg-purple-900/20"
-                  >
+                  <button className="w-full text-left px-4 py-2 text-purple-400 hover:bg-purple-900/20">
                     Logout
-                  </Button>
+                  </button>
                 </Link>
-              </PopoverContent>
-            </Popover>
+              </div>
+            </div>
           ) : (
             <Link href="/login">
-              <Button
-                variant="outline"
-                className="border-purple-500 text-purple-400 hover:bg-purple-900/20"
-              >
+              <button className="px-4 py-2 border border-purple-500 text-purple-400 rounded-md hover:bg-purple-900/20 transition-colors">
                 Login
-              </Button>
+              </button>
             </Link>
           )}
         </div>
