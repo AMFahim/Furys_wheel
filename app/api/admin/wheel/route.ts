@@ -129,10 +129,10 @@ export async function PUT(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const user = await roleGuard(userStatus.ADMIN);
-    if (user instanceof NextResponse) {
-      return user;
-    }
+    // const user = await roleGuard(userStatus.ADMIN);
+    // if (user instanceof NextResponse) {
+    //   return user;
+    // }
 
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status") as wheelStatus;
