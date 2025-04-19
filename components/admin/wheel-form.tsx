@@ -138,12 +138,15 @@ import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "sonner"
 import axiosInstance from "@/utils/axiosInstance"
+import { useUser } from "@/providers/UserContext"
 
 type PropsType = {
-  setIsWheelFormDisplay: Dispatch<SetStateAction<boolean>>
+  setIsWheelFormDisplay: Dispatch<SetStateAction<boolean>>;
+  wheelId: string;
 }
 
-export function WheelForm({setIsWheelFormDisplay}: PropsType) {
+export function WheelForm({setIsWheelFormDisplay, wheelId}: PropsType) {
+  // const {allWheelData} = useUser()
   const [wheelName, setWheelName] = useState("")
   const [isLoading, setIsLoading] = useState(false);
   const [prizes, setPrizes] = useState(
@@ -171,55 +174,6 @@ export function WheelForm({setIsWheelFormDisplay}: PropsType) {
 
     setPrizes(updated)
   }
-
-  // const handleSubmit = (e: React.FormEvent) => {
-  //   e.preventDefault()
-
-
-
-  //   const formData = {
-  //     wheelName,
-  //     prizes,
-  //   }
-
-  //   const totalpercentage = prizes.reduce((sum, prize) => sum + prize.percentage, 0)
-  //   if (totalpercentage !== 100) {
-  //     toast.error("Total percentage must equal 100%")
-  //     return
-  //   }
-
-  //   console.log("Form Submitted:", formData)
-  // }
-
-  // const handleSubmit = (e: React.FormEvent) => {
-  //   e.preventDefault()
-  
-  //   // Construct the wheel options with the required format
-  //   const wheelOptions = prizes.map(prize => ({
-  //     name: prize.name,
-  //     percentage: prize.percentage,
-  //     color: "#fff", // color is always #fff as per your specification
-  //   }))
-  
-  //   // Construct the formData
-  //   const formData = {
-  //     name: wheelName,
-  //     wheelOption: wheelOptions, // Map the prizes to wheelOption
-  //   }
-
-  //   const response = axiosInstance.post("/api/admin/wheel", formData);
-  //   console.log("response of wheel createiong", response);
-  
-  //   // Validate total percentage
-  //   const totalpercentage = prizes.reduce((sum, prize) => sum + prize.percentage, 0)
-  //   if (totalpercentage !== 100) {
-  //     toast.error("Total percentage must equal 100%")
-  //     return
-  //   }
-  
-  //   // Submit the data
-  //   console.log("Form Submitted:", formData)
-  // }
 
 
 
@@ -250,11 +204,19 @@ export function WheelForm({setIsWheelFormDisplay}: PropsType) {
     setIsLoading(true);
   
     try {
-      const response = await axiosInstance.post("/api/admin/wheel", formData);
-      console.log("Wheel Created:", response.data);
-      console.log("Submitted Data Format:", JSON.stringify(formData, null, 2));
-      toast.success("Wheel successfully created!");
-      setIsWheelFormDisplay(false);
+      if(wheelId){
+        const response = await axiosInstance.put(`/api/admin/wheel?id=${wheelId}`, formData)
+        console.log("Wheel update:", response.data);
+        toast.success("Wheel successfully Updated!");
+        setIsWheelFormDisplay(false);
+      }else {
+        const response = await axiosInstance.post("/api/admin/wheel", formData);
+        console.log("Wheel Created:", response.data);
+        console.log("Submitted Data Format:", JSON.stringify(formData, null, 2));
+        toast.success("Wheel successfully created!");
+        setIsWheelFormDisplay(false);
+      }
+    
     } catch (error) {
       console.error("Error creating wheel:", error);
       toast.error("Something went wrong.");

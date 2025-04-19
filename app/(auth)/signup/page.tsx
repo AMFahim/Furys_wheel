@@ -14,21 +14,25 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import { ArrowLeft, Loader2, UserPlus } from "lucide-react"
-import { DiscordLoginButton } from "@/components/discord-login-button"
-import axiosInstance from "@/utils/axiosInstance"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { toast } from "sonner"
+} from "@/components/ui/card";
+import { ArrowLeft, Loader2, UserPlus } from "lucide-react";
+import { DiscordLoginButton } from "@/components/discord-login-button";
+import axiosInstance from "@/utils/axiosInstance";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { handleAxiosError } from "@/utils/errorHandler";
+import { AxiosError } from "axios";
+
+// import { handleAxiosError } from "@/utils/handleAxiosError"; // ✅ Import this
 
 type UserData = {
   username: string;
   password: string;
-}
+};
 
 export default function RegisterPage() {
   const queryClient = useQueryClient();
-  const navigate = useRouter()
+  const navigate = useRouter();
 
   const [formData, setFormData] = useState({
     username: "",
@@ -43,42 +47,43 @@ export default function RegisterPage() {
     general: "",
   });
 
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { id, value } = e.target
-    setFormData((prev) => ({ ...prev, [id]: value }))
-    setFormErrors((prev) => ({ ...prev, [id]: "" }))
-  }
+    const { id, value } = e.target;
+    setFormData((prev) => ({ ...prev, [id]: value }));
+    setFormErrors((prev) => ({ ...prev, [id]: "", general: "" }));
+  };
 
-  const postRegistrationData = async(userData:UserData) => {
-    const response = await axiosInstance.post(
-      "/api/auth/register",
-      userData
-    )
-    console.log("regiser response", response);
+  const postRegistrationData = async (userData: UserData) => {
+    const response = await axiosInstance.post("/api/auth/register", userData);
     return response.data;
-
-  }
+  };
 
   const postRegistrationDataMutation = useMutation({
     mutationFn: postRegistrationData,
     onSuccess: () => {
-      toast.success("Registration Successfully Done!")
-      navigate.push("/login")
-      queryClient.invalidateQueries({
-        queryKey: ["userData"]
-      });
+      toast.success("Registration Successfully Done!");
+      navigate.push("/login");
+      queryClient.invalidateQueries({ queryKey: ["userData"] });
     },
     onError: (error) => {
-      toast.error("Something Went Wrong!")
-      console.error(error);
+      const handled = handleAxiosError(error as AxiosError);
+      toast.error(handled.message);
+      if (handled.errors) {
+        setFormErrors((prev) => ({
+          ...prev,
+          ...handled.errors,
+          general: handled.message,
+        }));
+      } else {
+        setFormErrors((prev) => ({ ...prev, general: handled.message }));
+      }
     },
-  })
+  });
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-
+  const validateForm = () => {
+    const { username, password, confirmPassword } = formData;
     const errors = {
       username: "",
       password: "",
@@ -86,50 +91,51 @@ export default function RegisterPage() {
       general: "",
     };
 
-    if (!formData.username) {
+    if (!username) {
       errors.username = "Username is required";
+    } else if (username.length < 6) {
+      errors.username = "Username must be at least 6 characters";
+    } else if (username.length > 18) {
+      errors.username = "Username must be at most 18 characters";
     }
 
-    if(formData.username.length < 6){
-      errors.username="Username must be at least 6 characters"
+    const passwordRegex =
+      /^(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?])(?=.*\d).{8,}$/;
+
+    if (!password) {
+      errors.password = "Password is required";
+    } else if (!passwordRegex.test(password)) {
+      errors.password =
+        "Password must be 8+ chars, incl. 1 capital, 1 number & 1 special character";
     }
 
-    if(formData.username.length > 18){
-      errors.username="Username must be in 18 characters"
+    if (password !== confirmPassword) {
+      errors.confirmPassword = "Passwords do not match";
     }
 
-    if (formData.password.length < 6) {
-      errors.password = "Password must be at least 6 characters"
-    }
-    
+    return errors;
+  };
 
-    if (formData.password !== formData.confirmPassword) {
-      errors.confirmPassword = "Passwords do not match"
-    }
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const errors = validateForm();
+    const hasErrors = Object.values(errors).some((err) => err !== "");
 
-    const hasErrors = Object.values(errors).some((err) => err !== "")
     if (hasErrors) {
-      setFormErrors(errors)
-      return
+      setFormErrors(errors);
+      return;
     }
 
-    setIsLoading(true)
-
+    setIsLoading(true);
     try {
-      await postRegistrationDataMutation.mutate(formData);
-    } catch (error) {
-      toast.error("Something Went Wrong!")
-      console.log(error);
-    }finally{
-      setIsLoading(false)
+      await postRegistrationDataMutation.mutateAsync({
+        username: formData.username,
+        password: formData.password,
+      });
+    } finally {
+      setIsLoading(false);
     }
-
-    // Simulate registration process
-    // setTimeout(() => {
-    //   setIsLoading(false)
-    //   console.log("Form submitted", formData)
-    // }, 1500)
-  }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#1a1a2e] to-[#121225] p-4">
@@ -223,7 +229,9 @@ export default function RegisterPage() {
                   className="bg-[#252547] border-purple-500/30 focus:border-purple-500 focus:ring-purple-500/20 text-white placeholder:text-gray-500"
                 />
                 {formErrors.confirmPassword && (
-                  <p className="text-sm text-red-400">{formErrors.confirmPassword}</p>
+                  <p className="text-sm text-red-400">
+                    {formErrors.confirmPassword}
+                  </p>
                 )}
               </div>
 

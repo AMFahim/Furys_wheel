@@ -5,19 +5,63 @@ import { Plus, Pencil, Trash2 } from "lucide-react"
 import { WheelForm } from "@/components/admin/wheel-form"
 import { useUser } from "@/providers/UserContext"
 import { useEffect, useState } from "react"
+import axiosInstance from "@/utils/axiosInstance"
+import { toast } from "sonner"
+import { Switch } from "@/components/ui/switch"
 
 export default function WheelsPage() {
-  const {setFetchAllWheelData, allWheelData} = useUser();
+  const { setFetchAllWheelData, allWheelData } = useUser();
   const [isWheelFormDisplay, setIsWheelFormDisplay] = useState(false);
+  const [wheelId, setWheelId] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedWheelId, setSelectedWheelId] = useState("");
+  const [wheelStatuses, setWheelStatuses] = useState<Record<string, boolean>>({});
+
 
   useEffect(() => {
     setFetchAllWheelData(true);
-  }, [])
+  }, []);
 
-  if(allWheelData){
-    console.log("all wheel data", allWheelData);
+  useEffect(() => {
+    const statusMap: Record<string, boolean> = {};
+    allWheelData?.forEach((wheel: any) => {
+      statusMap[wheel.id] = wheel.status === "APPROVED";
+    });
+    setWheelStatuses(statusMap);
+  }, [allWheelData]);
 
+  const toggleStatus = (id: string) => {
+    setWheelStatuses(prev => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
+
+  const confirmDelete = (id: string) => {
+    setSelectedWheelId(id);
+    setIsDeleteModalOpen(true);
   }
+
+  const handleDeleteWheel = async () => {
+    setIsLoading(true);
+    try {
+      const res = await axiosInstance.delete(`/api/admin/wheel?id=${selectedWheelId}`);
+      toast.success("Wheel Successfully Deleted!");
+      setFetchAllWheelData(true);
+    } catch (error) {
+      toast.error("Something went wrong! Please try again.");
+    } finally {
+      setIsLoading(false);
+      setIsDeleteModalOpen(false);
+    }
+  }
+
+  const handleEditWheel = (id:string) => {
+    setWheelId(id);
+    setIsWheelFormDisplay(true);
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -29,156 +73,85 @@ export default function WheelsPage() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-
         {
-          allWheelData && allWheelData?.map((wheel:any, index: number) => 
-
+          allWheelData?.map((wheel: any, index: number) =>
             <Card key={index} className="bg-[#252547] border-0">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center justify-between">
-              <span>{wheel.name}</span>
-              <div className="flex gap-2">
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <Pencil className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500">
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Status:</span>
-                <span className="text-green-500">Active</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span>Prizes:</span>
-                <span>{wheel?.wheelOption?.length}</span>
-              </div>
-              {/* <div className="flex justify-between text-sm">
-                <span>Total Spins:</span>
-                <span>1,245</span>
-              </div> */}
-              <div className="mt-4">
-                <div className="text-xs mb-1">Prize Distribution</div>
-                <div className="w-full h-4 bg-[#1e1e38] rounded-full overflow-hidden flex">
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center justify-between">
+                  <span>{wheel.name}</span>
+                  <div className="flex gap-2">
 
-                  {
-                    wheel?.wheelOption?.map((segment:any, index:number) => 
-                      <div className={` h-full`} style={{ width: `${segment.percentage}%`,     backgroundColor: segment.colour
-                  }}></div>
-                    )
-                  }
-                  {/* <div className="bg-[#6c3cb9] h-full" style={{ width: "25%" }}></div>
-                  <div className="bg-[#ffd700] h-full" style={{ width: "20%" }}></div>
-                  <div className="bg-[#e63946] h-full" style={{ width: "15%" }}></div> */}
+                  {/* <Switch
+            checked={wheelStatuses[wheel.id] || false}
+            onCheckedChange={() => toggleStatus(wheel.id)}
+          /> */}
+
+                    <Button onClick={() => handleEditWheel(wheel.id)} variant="ghost" size="icon" className="h-8 w-8">
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button onClick={() => confirmDelete(wheel.id)} variant="ghost" size="icon" className="h-8 w-8 text-red-500">
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span>Status:</span>
+                    <span className="text-green-500">Active</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Prizes:</span>
+                    <span>{wheel?.wheelOption?.length}</span>
+                  </div>
+                  <div className="mt-4">
+                    <div className="text-xs mb-1">Prize Distribution</div>
+                    <div className="w-full h-4 bg-[#1e1e38] rounded-full overflow-hidden flex">
+                      {
+                        wheel?.wheelOption?.map((segment: any, i: number) =>
+                          <div key={i} className="h-full" style={{ width: `${segment.percentage}%`, backgroundColor: segment.colour }}></div>
+                        )
+                      }
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
+              </CardContent>
+            </Card>
           )
         }
-
-       
-
-        {/* <Card className="bg-[#252547] border-0">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center justify-between">
-              <span>Mystery Spinner</span>
-              <div className="flex gap-2">
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <Pencil className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500">
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Status:</span>
-                <span className="text-green-500">Active</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span>Prizes:</span>
-                <span>6</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span>Total Spins:</span>
-                <span>876</span>
-              </div>
-              <div className="mt-4">
-                <div className="text-xs mb-1">Prize Distribution</div>
-                <div className="w-full h-4 bg-[#1e1e38] rounded-full overflow-hidden flex">
-                  <div className="bg-[#4361ee] h-full" style={{ width: "30%" }}></div>
-                  <div className="bg-[#6c3cb9] h-full" style={{ width: "30%" }}></div>
-                  <div className="bg-[#ffd700] h-full" style={{ width: "25%" }}></div>
-                  <div className="bg-[#e63946] h-full" style={{ width: "15%" }}></div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-[#252547] border-0">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center justify-between">
-              <span>Jackpot Wheel</span>
-              <div className="flex gap-2">
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <Pencil className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500">
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Status:</span>
-                <span className="text-green-500">Active</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span>Prizes:</span>
-                <span>10</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span>Total Spins:</span>
-                <span>543</span>
-              </div>
-              <div className="mt-4">
-                <div className="text-xs mb-1">Prize Distribution</div>
-                <div className="w-full h-4 bg-[#1e1e38] rounded-full overflow-hidden flex">
-                  <div className="bg-[#4361ee] h-full" style={{ width: "20%" }}></div>
-                  <div className="bg-[#6c3cb9] h-full" style={{ width: "20%" }}></div>
-                  <div className="bg-[#ffd700] h-full" style={{ width: "10%" }}></div>
-                  <div className="bg-[#e63946] h-full" style={{ width: "50%" }}></div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card> */}
       </div>
-{
-  isWheelFormDisplay &&   <Card className="bg-[#252547] border-0">
-  <CardHeader>
-    <CardTitle>Add/Edit Wheel</CardTitle>
-  </CardHeader>
-  <CardContent>
-    
-    <WheelForm setIsWheelFormDisplay={setIsWheelFormDisplay}/>
-  </CardContent>
-</Card>
-}
-    
+
+      {
+        isWheelFormDisplay && (
+          <Card className="bg-[#252547] border-0">
+            <CardHeader>
+              <CardTitle>Add/Edit Wheel</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <WheelForm setIsWheelFormDisplay={setIsWheelFormDisplay} wheelId={wheelId} />
+            </CardContent>
+          </Card>
+        )
+      }
+
+      {/* Delete Confirmation Modal */}
+      {isDeleteModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 rounded-xl">
+          <div className="bg-[#252547] p-6 rounded-lg w-[90%] max-w-sm text-center space-y-4">
+            <h2 className="text-xl font-semibold text-red-500">Confirm Deletion</h2>
+            <p>Are you sure you want to delete this wheel? This action cannot be undone.</p>
+            <div className="flex justify-center gap-4">
+              <Button variant="ghost" className="border rounded" onClick={() => setIsDeleteModalOpen(false)} disabled={isLoading}>
+                Cancel
+              </Button>
+              <Button className="bg-red-500 hover:bg-red-600 rounded" onClick={handleDeleteWheel} disabled={isLoading}>
+                {isLoading ? "Deleting..." : "Delete"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

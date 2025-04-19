@@ -5,10 +5,10 @@ export function Sidebar() {
   return (
     <div className="w-64 bg-[#252547] border-r border-[#3a3a5e] h-screen sticky top-0 flex flex-col">
       <div className="p-6">
-        <h1 className="text-xl font-bold text-white flex items-center gap-2">
+        <Link href={"/"} className="text-xl font-bold text-white flex items-center gap-2">
           <Wheel className="h-6 w-6 text-[#6c3cb9]" />
           <span>Wheel Admin</span>
-        </h1>
+        </Link>
       </div>
 
       <nav className="flex-1 px-4 space-y-1">
