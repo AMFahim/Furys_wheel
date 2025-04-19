@@ -6,17 +6,17 @@ export const handleAxiosError = (error: AxiosError) => {
     switch (error.response.status) {
       case 400:
         return {
-          message: "Invalid request",
+          message: "Invalid request. Please check your input.",
           errors: (error.response.data as { errors?: any })?.errors
         };
       case 401:
         return {
-          message: "Unauthorized",
+          message: "Invalid Credintial! Please log in to continue.",
           redirect: "/login"
         };
       case 403:
         return {
-          message: "Forbidden access"
+          message: "You don't have permission to access this."
         };
       case 404:
         return {
@@ -24,7 +24,7 @@ export const handleAxiosError = (error: AxiosError) => {
         };
       case 409:
         return {
-          message: "Conflict with existing resource"
+          message: " User already exists!"
         };
       default:
         return {

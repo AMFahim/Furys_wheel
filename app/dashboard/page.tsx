@@ -1,9 +1,12 @@
+"use client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Overview } from "@/components/admin/overview"
 import { Users, ShipWheelIcon as Wheel, Trophy, Award } from "lucide-react"
 import { RecentActivity } from "@/components/admin/recent-activity"
+import { useUser } from "@/providers/UserContext"
 
 export default function AdminDashboard() {
+  const {allWheelData, allUsersData} = useUser()
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold">Dashboard</h1>
@@ -15,8 +18,7 @@ export default function AdminDashboard() {
             <Wheel className="h-4 w-4 text-[#4361ee]" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">5</div>
-            <p className="text-xs text-muted-foreground">+1 from last week</p>
+            <div className="text-2xl font-bold">{allWheelData?.length || 0}</div>
           </CardContent>
         </Card>
 
@@ -26,8 +28,7 @@ export default function AdminDashboard() {
             <Users className="h-4 w-4 text-[#4361ee]" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">1,234</div>
-            <p className="text-xs text-muted-foreground">+21 from last week</p>
+            <div className="text-2xl font-bold">{allUsersData?.data?.length || 0}</div>
           </CardContent>
         </Card>
 
@@ -44,7 +45,7 @@ export default function AdminDashboard() {
 
         <Card className="bg-[#252547] border-0">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Pending Winners</CardTitle>
+            <CardTitle className="text-sm font-medium">Winners</CardTitle>
             <Trophy className="h-4 w-4 text-[#4361ee]" />
           </CardHeader>
           <CardContent>

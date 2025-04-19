@@ -24,6 +24,7 @@ import { useUser } from "@/providers/UserContext";
 import { handleAxiosError } from "@/utils/errorHandler";
 import { setAuthToken } from "@/lib/auth";
 import { AxiosError } from "axios";
+import { toast } from "sonner";
 
 interface LoginError {
   username?: string;
@@ -36,9 +37,10 @@ export default function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<LoginError>({});
+  const [errorMessage, setErrorMessage]=useState("");
 
   const router = useRouter();
-  const { toast } = useToast();
+  // const { toast } = useToast();
   const { setUser } = useUser();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -73,17 +75,33 @@ export default function LoginPage() {
       }
     } catch (error) {
       const errorDetails = handleAxiosError(error as AxiosError);
+      console.log(errors)
+      // toast({
+      //   title: "Login failed",
+      //   description: errorDetails.message,
+      //   variant: "destructive",
+      // });
 
-      toast({
-        title: "Login failed",
-        description: errorDetails.message,
-        variant: "destructive",
-      });
+      // toast.error("Login Failed")
 
+      // if (errorDetails.errors) {
+      //   setErrors(errorDetails.errors);
+      // }
+
+      // if (errorDetails.redirect) {
+      //   router.push(errorDetails.redirect);
+      // }
+
+      toast.error(errorDetails.message);
+
+      // set specific field errors if available
       if (errorDetails.errors) {
         setErrors(errorDetails.errors);
+      } else {
+        // if no field-level errors, set general error
+        setErrors({ general: errorDetails.message });
       }
-
+    
       if (errorDetails.redirect) {
         router.push(errorDetails.redirect);
       }
