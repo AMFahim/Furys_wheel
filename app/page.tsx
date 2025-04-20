@@ -1,19 +1,38 @@
 "use client";
 import FurysWheel from "@/components/furys-wheel";
-
 import GlassWinnersList from "@/components/Glass-winner-list";
 import GlassWheelList from "@/components/WheelItemsList";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-
 import { useUser } from "@/providers/UserContext";
+import axiosInstance from "@/utils/axiosInstance";
+import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
 
 export default function Home() {
-  const { allWheelData, setFetchAllWheelData, user } = useUser();
+  const { allWheelData, setFetchAllWheelData, user, setUser } = useUser();
   const [selectedWheel, setSelectedWheel] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
+
   useEffect(() => {
     setFetchAllWheelData(true);
-  }, []);
+    
+    // Set a timeout to ensure loading state shows for at least a minimum time
+    // This helps prevent flashing if data loads very quickly
+    const loadingTimer = setTimeout(() => {
+      setIsLoading(false);
+    }, 800);
+    
+    return () => clearTimeout(loadingTimer);
+  }, [setFetchAllWheelData]);
+
+  // Update loading state when user data is available
+  useEffect(() => {
+    if (user !== undefined) {
+      setIsLoading(false);
+    }
+  }, [user]);
 
   const wheels = [
     { id: "fortune-wheel", name: "Fortune Wheel", prizes: 8, theme: "gold" },
@@ -113,6 +132,30 @@ export default function Home() {
     return username ? username.charAt(0).toUpperCase() : "U";
   };
 
+  const handleLogout = async () => {
+    try {
+      await axiosInstance.post("/api/auth/logout");
+
+      if (setUser) {
+        setUser(null);
+      }
+      router.push("/login");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen bg-gradient-to-br from-[#0a0a1a] to-[#1a1a3a] items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-12 w-12 animate-spin text-purple-500 mx-auto mb-4" />
+          <p className="text-lg text-gray-300">Loading Fury's Wheel...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <main className="flex min-h-screen bg-gradient-to-br from-[#0a0a1a] to-[#1a1a3a]">
       <GlassWheelList
@@ -168,11 +211,13 @@ export default function Home() {
                     </button>
                   </Link>
                 )}
-                <Link href="/logout">
-                  <button className="w-full text-left px-4 py-2 text-purple-400 hover:bg-purple-900/20">
-                    Logout
-                  </button>
-                </Link>
+
+                <button
+                  onClick={handleLogout}
+                  className="w-full text-left px-4 py-2 text-purple-400 hover:bg-purple-900/20"
+                >
+                  Logout
+                </button>
               </div>
             </div>
           ) : (
