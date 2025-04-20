@@ -1,15 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { X, Check } from "lucide-react";
 import axiosInstance from "@/utils/axiosInstance";
+import { useRouter } from "next/navigation";
 
 type Prize = {
   id: number;
   name: string;
   color: string;
   textColor: string;
+  wheelName: string
 };
 
 type PrizeOverlayProps = {
@@ -25,6 +27,11 @@ export default function PrizeOverlay({
 }: PrizeOverlayProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [reloadingUI, setReloadingUI] = useState(false);
+  const router = useRouter();
+  
+  console.log(prize, wheelName);
+  
   const handleClaimPrize = async () => {
     setIsSubmitting(true);
 
@@ -32,7 +39,7 @@ export default function PrizeOverlay({
       // Create payload based on the data shown in your screenshot
       const payload = {
         wheelName: wheelName,
-        wheelReward: prize,
+        wheelReward: prize.wheelName,
       };
 
       const response = await axiosInstance.post(
@@ -42,11 +49,36 @@ export default function PrizeOverlay({
 
       setShowSuccess(true);
     } catch (error) {
-
+      console.log(error);
+      
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  // Effect to handle silent UI reload after success
+  useEffect(() => {
+    if (showSuccess && !reloadingUI) {
+      // Set a timeout to give the user time to see the success message
+      const reloadTimer = setTimeout(() => {
+        setReloadingUI(true);
+        
+        // Silently refresh the data by using router.refresh()
+        // This will refresh the page data without a full page reload
+        router.refresh();
+        
+        // Optional: If you need a hard refresh, use this instead
+        // window.location.reload();
+        
+        // Close the modal after a small delay to ensure data is refreshed
+        setTimeout(() => {
+          onClose();
+        }, 300);
+      }, 2000); // Show success state for 2 seconds before refreshing
+      
+      return () => clearTimeout(reloadTimer);
+    }
+  }, [showSuccess, reloadingUI, router, onClose]);
 
   return (
     <motion.div

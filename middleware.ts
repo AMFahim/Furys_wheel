@@ -12,7 +12,7 @@ import { userStatus } from "@prisma/client";
 // } as const;
 
 const PROTECTED_ROUTES: Record<string, userStatus[]> = {
-  "/" : [userStatus.USER, userStatus.ADMIN],
+  // "/" : [userStatus.USER, userStatus.ADMIN],
   "/profile": [userStatus.USER, userStatus.ADMIN],
   "/game": [userStatus.USER, userStatus.ADMIN],
   "/dashboard": [userStatus.ADMIN],
