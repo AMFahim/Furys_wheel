@@ -134,6 +134,8 @@ export default function Home() {
     return username ? username.charAt(0).toUpperCase() : "U";
   };
 
+  console.log("checking user role", user);
+
   const handleLogout = async () => {
     try {
       await axiosInstance.post("/api/auth/logout");

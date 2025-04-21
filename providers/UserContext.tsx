@@ -64,7 +64,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     fetchUserData();
-    fetchUserData();
+    // fetchUserData();
   }, []);
 
 
