@@ -138,7 +138,7 @@ export default function PrizeOverlay({
             >
               <p className="text-gray-400 mb-2">You&apos;ve won:</p>
               <p className={`text-xl font-bold ${prize.textColor}`}>
-                {wheelName}
+                {prize.name}
               </p>
             </motion.div>
 
