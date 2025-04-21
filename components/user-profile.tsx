@@ -30,7 +30,7 @@ export function UserProfile({
 }: UserProfileProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [isSpinning, setIsSpinning] = useState(false);
-  
+
   const handleSpin = () => {
     setIsSpinning(true);
     setTimeout(() => setIsSpinning(false), 1000);
@@ -38,7 +38,7 @@ export function UserProfile({
 
   const handleReload = () => {
     window.location.reload();
-  }
+  };
   return (
     <Card className="w-full max-w-md border-0 bg-[#252547] bg-opacity-90 shadow-xl overflow-hidden">
       <div className="h-24 bg-gradient-to-r from-[#6c3cb9] to-[#4361ee]"></div>
@@ -102,8 +102,10 @@ export function UserProfile({
               ))
             ) : (
               <div className="bg-[#1e1e38] rounded-lg p-4 text-center text-[#a0a0d9]">
-                No rewards claimed yet. Spin the wheel to win prizes!
-                <Button onClick={handleReload}><Loader/></Button>
+                <p> No rewards claimed yet. Spin the wheel to win prizes!</p>
+                <Button onClick={handleReload}>
+                  <Loader />
+                </Button>
               </div>
             )}
           </div>
