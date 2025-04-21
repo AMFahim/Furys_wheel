@@ -202,7 +202,7 @@ export default function Home() {
               </button>
 
               <div className="absolute right-0 mt-2 w-40 bg-[#1a1a3a] border border-purple-500 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
-                {user.role === "ADMIN" ? (
+                {user.role && user?.role === "ADMIN" ? (
                   <Link href="/dashboard">
                     <button className="w-full text-left px-4 py-2 text-purple-400 hover:bg-purple-900/20">
                       Dashboard
