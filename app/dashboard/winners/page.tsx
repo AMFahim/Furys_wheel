@@ -72,7 +72,7 @@ export default function WinnersPage() {
         </TabsList>
 
         <TabsContent value="all" className="space-y-4 mt-6">
-          {allWinnerData?.data?.map((winner:any) => (
+          {allWinnerData && allWinnerData?.data?.map((winner:any) => (
             <Card key={winner.id} className="bg-[#252547] border-0">
               <CardContent className="p-6">
                 <div className="flex items-center gap-4">
