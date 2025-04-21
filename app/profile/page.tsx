@@ -46,6 +46,8 @@ export default function ProfilePage() {
     try {
       setIsLoading(true);
       const res = await axiosInstance.get(`/api/admin/winnerSelected/user?userId=${user?.id}`);
+
+      // console.log("profile data", res);
       if (res.data.data) {
         setClaimedData(res.data.data);
       }

@@ -10,6 +10,9 @@ interface Winner {
   prize: string
   wheel: string
   timestamp: string
+  user: any;
+  wheelName: string;
+  wheelReward: string;
 }
 
 interface GlassWinnersListProps {
@@ -65,7 +68,7 @@ export default function GlassWinnersList({ winners }: GlassWinnersListProps) {
             {/* Winners List */}
             <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
               <AnimatePresence>
-                {winners.map((winner, index) => (
+                {winners?.map((winner, index) => (
                   <motion.div
                     key={winner.id}
                     initial={{ opacity: 0, x: 20 }}
@@ -82,19 +85,19 @@ export default function GlassWinnersList({ winners }: GlassWinnersListProps) {
 
                       {/* Winner Info */}
                       <div className="flex-1">
-                        <h3 className="font-medium text-white">{winner.name}</h3>
-                        <div className="flex items-center gap-1 mt-1">
+                        <h3 className="font-medium text-white">{winner.user.username}</h3>
+                        <div className="flex flex-col w-full gap-1 mt-1">
                           <span className="text-xs px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300">
-                            {winner.prize}
+                            {winner.wheelReward}
                           </span>
                           <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300">
-                            {winner.wheel}
+                            {winner.wheelName}
                           </span>
                         </div>
-                        <div className="flex items-center gap-1 mt-2 text-xs text-gray-400">
+                        {/* <div className="flex items-center gap-1 mt-2 text-xs text-gray-400">
                           <Clock size={12} />
                           <span>{winner.timestamp}</span>
-                        </div>
+                        </div> */}
                       </div>
                     </div>
 
@@ -106,12 +109,12 @@ export default function GlassWinnersList({ winners }: GlassWinnersListProps) {
             </div>
 
             {/* Footer */}
-            <div className="mt-4 pt-4 border-t border-white/10">
+            {/* <div className="mt-4 pt-4 border-t border-white/10">
               <div className="flex justify-between items-center">
                 <p className="text-xs text-gray-400">Total winners: {winners.length}</p>
                 <button className="text-xs text-purple-400 hover:text-purple-300 transition-colors">View All</button>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </motion.div>

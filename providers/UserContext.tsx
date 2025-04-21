@@ -25,6 +25,16 @@ type UserContextType = {
   setFetchAllWheelData: (value: boolean) => void;
   allWheelData: any;
   wheelDataLoading: any;
+  approvedWheelData: any;
+  setFetchApprovedWheelData: (value: boolean) => void;
+  setFetchAllWinnerData:(value: boolean) => void;
+  allWinnerData: any;
+  setFetchApprovedWinners:(value: boolean) => void;
+  approvedWinners: any;
+  setFetchPendingWinners: (value: boolean) => void;
+  pendingWinners: any;
+  allWinnerDataLoading:any;
+  approvedWheelDataLoading: any;
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -34,6 +44,10 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [fetchDiscordUser, setFetchDiscordUser] = useState(false);
   const [fetchAllUsersData, setFetchAllUserData] = useState(false);
   const [fetchAllWheelData, setFetchAllWheelData] = useState(false);
+  const [fetchApprovedWheelData, setFetchApprovedWheelData] = useState(false);
+  const [fetchAllWinnerData, setFetchAllWinnerData] = useState(false);
+  const [fetchApprovedWinners, setFetchApprovedWinners] = useState(false);
+  const [fetchPendingWinners, setFetchPendingWinners] = useState(false)
   const { toast } = useToast();
   const router = useRouter();
 
@@ -119,7 +133,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     queryFn: async () => {
       try {
         const response = await axiosInstance.get("/api/admin/wheel");
-        console.log("all wheel data response", response);
+        console.log("all wheel data response", response.data);
         return response.data;
       } catch (error) {
         const errorDetails = handleAxiosError(error as AxiosError);
@@ -138,6 +152,106 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     enabled: fetchAllWheelData,
   });
 
+
+  const { data: approvedWheelData, isLoading: approvedWheelDataLoading } = useQuery({
+    queryKey: ["approvedWheelData"],
+    queryFn: async () => {
+      try {
+        const response = await axiosInstance.get("/api/admin/wheel?status=APPROVED");
+        console.log("approved wheel data response", response.data);
+        return response.data;
+      } catch (error) {
+        const errorDetails = handleAxiosError(error as AxiosError);
+        toast({
+          title: "Approved wheel Data Fetch Failed",
+          description: errorDetails.message,
+          variant: "destructive",
+        });
+
+        if (errorDetails.redirect) {
+          router.push(errorDetails.redirect);
+        }
+        return null;
+      }
+    },
+    enabled: fetchApprovedWheelData,
+  });
+
+
+  const { data: allWinnerData, isLoading: allWinnerDataLoading } = useQuery({
+    queryKey: ["allWinnerData"],
+    queryFn: async () => {
+      try {
+        const response = await axiosInstance.get("/api/admin/winnerSelected");
+        console.log("all winner data response", response.data);
+        return response.data;
+      } catch (error) {
+        const errorDetails = handleAxiosError(error as AxiosError);
+        toast({
+          title: "all winner Data Fetch Failed",
+          description: errorDetails.message,
+          variant: "destructive",
+        });
+
+        if (errorDetails.redirect) {
+          router.push(errorDetails.redirect);
+        }
+        return null;
+      }
+    },
+    enabled: fetchAllWinnerData,
+  });
+
+
+  const { data: approvedWinners, isLoading: approvedWinnersLoading } = useQuery({
+    queryKey: ["approvedWinners"],
+    queryFn: async () => {
+      try {
+        const response = await axiosInstance.get("/api/admin/winnerSelected?status=APPROVED");
+        console.log("all winner data response", response.data);
+        return response.data;
+      } catch (error) {
+        const errorDetails = handleAxiosError(error as AxiosError);
+        toast({
+          title: "all approved winner Data Fetch Failed",
+          description: errorDetails.message,
+          variant: "destructive",
+        });
+
+        if (errorDetails.redirect) {
+          router.push(errorDetails.redirect);
+        }
+        return null;
+      }
+    },
+    enabled: fetchApprovedWinners,
+  });
+
+
+  const { data: pendingWinners, isLoading: pendingWinnersLoading } = useQuery({
+    queryKey: ["pendingWinners"],
+    queryFn: async () => {
+      try {
+        const response = await axiosInstance.get("/api/admin/winnerSelected?status=PENDING");
+        console.log("all pending winners data response", response.data);
+        return response.data;
+      } catch (error) {
+        const errorDetails = handleAxiosError(error as AxiosError);
+        toast({
+          title: "all pending winner Data Fetch Failed",
+          description: errorDetails.message,
+          variant: "destructive",
+        });
+
+        if (errorDetails.redirect) {
+          router.push(errorDetails.redirect);
+        }
+        return null;
+      }
+    },
+    enabled: fetchPendingWinners,
+  });
+
   return (
     <UserContext.Provider
       value={{
@@ -150,6 +264,16 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         allWheelData,
         setFetchAllWheelData,
         wheelDataLoading,
+        setFetchApprovedWheelData,
+        approvedWheelData,
+        setFetchAllWinnerData,
+        allWinnerData,
+        approvedWinners,
+        setFetchApprovedWinners,
+        pendingWinners,
+        setFetchPendingWinners,
+        allWinnerDataLoading,
+        approvedWheelDataLoading
       }}
     >
       {children}

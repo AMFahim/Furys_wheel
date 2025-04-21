@@ -10,13 +10,15 @@ import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
 export default function Home() {
-  const { allWheelData, setFetchAllWheelData, user, setUser } = useUser();
+  const { setFetchAllWheelData, user, setUser, approvedWheelData, setFetchApprovedWheelData, setFetchApprovedWinners, approvedWinners } = useUser();
   const [selectedWheel, setSelectedWheel] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    setFetchAllWheelData(true);
+    // setFetchAllWheelData(true);
+    setFetchApprovedWheelData(true);
+    setFetchApprovedWinners(true);
     
     // Set a timeout to ensure loading state shows for at least a minimum time
     // This helps prevent flashing if data loads very quickly
@@ -25,7 +27,7 @@ export default function Home() {
     }, 800);
     
     return () => clearTimeout(loadingTimer);
-  }, [setFetchAllWheelData]);
+  }, [setFetchApprovedWheelData]);
 
   // Update loading state when user data is available
   useEffect(() => {
@@ -145,7 +147,7 @@ export default function Home() {
     }
   };
 
-  if (isLoading) {
+  if (isLoading && !approvedWheelData) {
     return (
       <div className="flex min-h-screen bg-gradient-to-br from-[#0a0a1a] to-[#1a1a3a] items-center justify-center">
         <div className="text-center">
@@ -159,7 +161,7 @@ export default function Home() {
   return (
     <main className="flex min-h-screen bg-gradient-to-br from-[#0a0a1a] to-[#1a1a3a]">
       <GlassWheelList
-        wheels={allWheelData}
+        wheels={approvedWheelData?.[0]?.wheelOption}
         selectedWheel={selectedWheel}
         onSelectWheel={setSelectedWheel}
       />
@@ -230,7 +232,7 @@ export default function Home() {
         </div>
       </div>
 
-      <GlassWinnersList winners={winners} />
+      <GlassWinnersList winners={approvedWinners?.data} />
     </main>
   );
 }

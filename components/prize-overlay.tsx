@@ -39,7 +39,7 @@ export default function PrizeOverlay({
       // Create payload based on the data shown in your screenshot
       const payload = {
         wheelName: wheelName,
-        wheelReward: prize.wheelName,
+        wheelReward: prize.name,
       };
 
       const response = await axiosInstance.post(

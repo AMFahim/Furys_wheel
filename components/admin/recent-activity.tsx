@@ -1,50 +1,26 @@
+"use client"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useUser } from "@/providers/UserContext"
 
 export function RecentActivity() {
-  const activities = [
-    {
-      user: "Alex Johnson",
-      action: "won 500 Coins on Fortune Wheel",
-      time: "2 mins ago",
-      avatar: "/placeholder.svg?height=32&width=32",
-      initials: "AJ",
-    },
-    {
-      user: "Sarah Miller",
-      action: "won VIP Access on VIP Wheel",
-      time: "5 mins ago",
-      avatar: "/placeholder.svg?height=32&width=32",
-      initials: "SM",
-    },
-    {
-      user: "James Wilson",
-      action: "won Mystery Box on Mystery Spinner",
-      time: "12 mins ago",
-      avatar: "/placeholder.svg?height=32&width=32",
-      initials: "JW",
-    },
-    {
-      user: "Emma Davis",
-      action: "registered a new account",
-      time: "30 mins ago",
-      avatar: "/placeholder.svg?height=32&width=32",
-      initials: "ED",
-    },
-  ]
-
+  const {allWinnerData, allWinnerDataLoading} = useUser()
+  
+  if(allWinnerDataLoading){
+    <div>Loading....</div>
+  }
   return (
     <div className="space-y-4">
-      {activities.map((activity, i) => (
+      {allWinnerData && allWinnerData?.data.slice(-5).map((winner: any, i:number) => (
         <div key={i} className="flex items-center gap-4">
           <Avatar className="h-8 w-8">
-            <AvatarImage src={activity.avatar || "/placeholder.svg"} />
-            <AvatarFallback className="bg-[#4361ee] text-xs">{activity.initials}</AvatarFallback>
+            <AvatarImage src={winner.avatar || "/placeholder.svg"} />
+            <AvatarFallback className="bg-[#4361ee] text-xs">{winner.initials}</AvatarFallback>
           </Avatar>
           <div className="flex-1 space-y-1">
-            <p className="text-sm font-medium leading-none">{activity.user}</p>
-            <p className="text-xs text-muted-foreground">{activity.action}</p>
+            <p className="text-sm font-medium leading-none">{winner.user.username}</p>
+            <p className="text-xs text-muted-foreground">Won <span className="text-[#ffd700]">{winner.wheelReward}</span> on {winner.wheelName}</p>
           </div>
-          <div className="text-xs text-muted-foreground">{activity.time}</div>
+          {/* <div className="text-xs text-muted-foreground">{activity.time}</div> */}
         </div>
       ))}
     </div>

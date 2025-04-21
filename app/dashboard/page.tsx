@@ -4,14 +4,23 @@ import { Overview } from "@/components/admin/overview"
 import { Users, ShipWheelIcon as Wheel, Trophy, Award } from "lucide-react"
 import { RecentActivity } from "@/components/admin/recent-activity"
 import { useUser } from "@/providers/UserContext"
+import { useEffect } from "react"
 
 export default function AdminDashboard() {
-  const {allWheelData, allUsersData} = useUser()
+  const {allWheelData, allUsersData, setFetchAllUserData, setFetchAllWinnerData, setFetchAllWheelData, allWinnerData} = useUser();
+
+  console.log("all winnder dashboard data", allWheelData);
+
+  useEffect(() => {
+    setFetchAllWheelData(true);
+    setFetchAllWinnerData(true);
+    setFetchAllUserData(true);
+  }, [])
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold">Dashboard</h1>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <Card className="bg-[#252547] border-0">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Total Wheels</CardTitle>
@@ -32,7 +41,7 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
 
-        <Card className="bg-[#252547] border-0">
+        {/* <Card className="bg-[#252547] border-0">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Total Spins</CardTitle>
             <Award className="h-4 w-4 text-[#4361ee]" />
@@ -41,7 +50,7 @@ export default function AdminDashboard() {
             <div className="text-2xl font-bold">9,876</div>
             <p className="text-xs text-muted-foreground">+342 from last week</p>
           </CardContent>
-        </Card>
+        </Card> */}
 
         <Card className="bg-[#252547] border-0">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -50,24 +59,23 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">12</div>
-            <p className="text-xs text-muted-foreground">Awaiting approval</p>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card className="bg-[#252547] border-0">
+      <div className="grid gap-6 md:grid-cols-1">
+        {/* <Card className="bg-[#252547] border-0">
           <CardHeader>
             <CardTitle>Wheel Spins Overview</CardTitle>
           </CardHeader>
           <CardContent>
             <Overview />
           </CardContent>
-        </Card>
+        </Card> */}
 
         <Card className="bg-[#252547] border-0">
           <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
+            <CardTitle>Recent Winners</CardTitle>
           </CardHeader>
           <CardContent>
             <RecentActivity/>

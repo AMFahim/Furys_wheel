@@ -13,19 +13,8 @@ type Prize = {
   color: string
   textColor: string
   wheelName: string
-  probability: number
+  percentage: number
 }
-
-const prizes = [
-  { id: 1, name: "50% Off", color: "from-blue-700 to-blue-900", textColor: "text-blue-300", wheelName: "50% Off", probability: 15 },
-  { id: 2, name: "Free Session", color: "from-purple-700 to-purple-900", textColor: "text-purple-300", wheelName: "Free Session", probability: 5 },
-  { id: 3, name: "Gift Card", color: "from-indigo-700 to-indigo-900", textColor: "text-indigo-300", wheelName: "Gift Card", probability: 10 },
-  { id: 4, name: "Premium", color: "from-violet-700 to-violet-900", textColor: "text-violet-300", wheelName: "Premium", probability: 5 },
-  { id: 5, name: "Mystery Box", color: "from-fuchsia-700 to-fuchsia-900", textColor: "text-fuchsia-300", wheelName: "Mystery Box", probability: 20 },
-  { id: 6, name: "Extra Points", color: "from-blue-800 to-indigo-900", textColor: "text-blue-300", wheelName: "Extra Points", probability: 25 },
-  { id: 7, name: "VIP Status", color: "from-purple-800 to-indigo-900", textColor: "text-purple-300", wheelName: "VIP Status", probability: 5 },
-  { id: 8, name: "Special Badge", color: "from-indigo-800 to-violet-900", textColor: "text-indigo-300", wheelName: "Special Badge", probability: 15 },
-]
 
 export default function FurysWheel({ forcedWinId }: { forcedWinId?: number }) {
   const [isSpinning, setIsSpinning] = useState(false)
@@ -35,52 +24,81 @@ export default function FurysWheel({ forcedWinId }: { forcedWinId?: number }) {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const spinSoundRef = useRef<HTMLAudioElement | null>(null)
   const winSoundRef = useRef<HTMLAudioElement | null>(null)
-    const { user } = useUser();
-  const weightedPrizes = useRef(createWeightedPrizeList())
+  const { user, approvedWheelData, setFetchApprovedWheelData } = useUser()
+  const [prizes, setPrizes] = useState<Prize[]>([])
+  const weightedPrizes = useRef<any[]>([])
 
+  // Initialize audio and fetch wheel data
   useEffect(() => {
     audioRef.current = new Audio("/sounds/click.mp3")
     spinSoundRef.current = new Audio("/sounds/spin.mp3")
     winSoundRef.current = new Audio("/sounds/win.mp3")
 
+    setFetchApprovedWheelData(true)
+    
     return () => {
       audioRef.current?.pause()
       spinSoundRef.current?.pause()
       winSoundRef.current?.pause()
     }
-  }, [])
+  }, [setFetchApprovedWheelData])
 
-  function validateProbabilities() {
-    const sum = prizes.reduce((total, prize) => total + prize.probability, 0)
+  // Update prizes when wheel data is available
+  useEffect(() => {
+    if (approvedWheelData && approvedWheelData[0]?.wheelOption && approvedWheelData[0].wheelOption.length > 0) {
+      console.log("Setting prizes with:", approvedWheelData[0].wheelOption)
+      setPrizes(approvedWheelData[0].wheelOption)
+    }
+  }, [approvedWheelData])
+
+  // Update weightedPrizes when prizes change
+  useEffect(() => {
+    if (prizes && prizes.length > 0) {
+      console.log("Updating weighted prizes with:", prizes)
+      weightedPrizes.current = createWeightedPrizeList(prizes)
+    }
+  }, [prizes])
+
+  function validateProbabilities(prizesData: Prize[]) {
+    if (!prizesData || prizesData.length === 0) return
+    
+    const sum = prizesData.reduce((total, prize) => total + prize.percentage, 0)
     if (Math.abs(sum - 100) > 0.01) {
       console.warn(`Prize probabilities sum to ${sum}%, not 100%. This may lead to unexpected behavior.`)
     }
   }
 
-  function createWeightedPrizeList() {
-    validateProbabilities()
+  function createWeightedPrizeList(prizesData: Prize[]) {
+    if (!prizesData || prizesData.length === 0) return []
     
-    const totalProbability = prizes.reduce((sum, prize) => sum + prize.probability, 0)
-    const normalizedPrizes = prizes.map(prize => ({
+    validateProbabilities(prizesData)
+    
+    const totalPercentage = prizesData.reduce((sum, prize) => sum + prize.percentage, 0)
+    const normalizedPrizes = prizesData.map((prize) => ({
       ...prize,
-      normalizedProbability: prize.probability / totalProbability
+      normalizedPercentage: prize.percentage / totalPercentage
     }))
     
-    let cumulativeProbability = 0
-    return normalizedPrizes.map(prize => {
+    let cumulativePercentage = 0
+    return normalizedPrizes.map((prize) => {
       const segment = {
         prize,
-        rangeStart: cumulativeProbability,
-        rangeEnd: cumulativeProbability + prize.normalizedProbability
+        rangeStart: cumulativePercentage,
+        rangeEnd: cumulativePercentage + prize.normalizedPercentage
       }
-      cumulativeProbability += prize.normalizedProbability
+      cumulativePercentage += prize.normalizedPercentage
       return segment
     })
   }
 
-  const selectPrizeByProbability = () => {
+  const selectPrizeByPercentage = () => {
+    if (!prizes || prizes.length === 0 || !weightedPrizes.current || weightedPrizes.current.length === 0) {
+      console.error("Cannot select prize - prizes or weightedPrizes not initialized")
+      return prizes?.[0]
+    }
+    
     if (forcedWinId !== undefined) {
-      const forcedPrize = prizes.find(prize => prize.id === forcedWinId)
+      const forcedPrize = prizes.find((prize) => prize.id === forcedWinId)
       if (forcedPrize) {
         console.log(`Forcing wheel to land on: ${forcedPrize.wheelName}`)
         return forcedPrize
@@ -90,18 +108,25 @@ export default function FurysWheel({ forcedWinId }: { forcedWinId?: number }) {
     
     const randomValue = Math.random()
     const selectedSegment = weightedPrizes.current.find(
-      segment => randomValue >= segment.rangeStart && randomValue < segment.rangeEnd
+      (segment) => randomValue >= segment.rangeStart && randomValue < segment.rangeEnd
     )
     return selectedSegment?.prize || prizes[0]
   }
   
   const calculateTargetAngleForPrize = (selectedPrize: Prize) => {
-    const prizeIndex = prizes.findIndex(prize => prize.id === selectedPrize.id)
-    const segmentAngle = 360 / prizes.length
-
-    const segmentCenterAngle = prizeIndex * segmentAngle + (segmentAngle / 2)
+    if (!prizes || prizes.length === 0) {
+      console.error("Cannot calculate angle - prizes not initialized")
+      return 0
+    }
     
-
+    const prizeIndex = prizes.findIndex((prize) => prize.id === selectedPrize.id)
+    if (prizeIndex === -1) {
+      console.error("Selected prize not found in prizes array")
+      return 0
+    }
+    
+    const segmentAngle = 360 / prizes.length
+    const segmentCenterAngle = prizeIndex * segmentAngle + (segmentAngle / 2)
     const targetAngle = 360 - segmentCenterAngle + 90
     
     const randomOffset = forcedWinId !== undefined 
@@ -112,9 +137,13 @@ export default function FurysWheel({ forcedWinId }: { forcedWinId?: number }) {
   }
 
   const getPrizeAtCurrentRotation = (currentRotation: number) => {
+    if (!prizes || prizes.length === 0) {
+      console.error("Cannot get prize at rotation - prizes not initialized")
+      return null
+    }
+    
     const normalizedRotation = currentRotation % 360
     const segmentAngle = 360 / prizes.length
-
     const pointerPosition = (360 - normalizedRotation + 90) % 360
     const prizeIndex = Math.floor(pointerPosition / segmentAngle)
     
@@ -123,10 +152,16 @@ export default function FurysWheel({ forcedWinId }: { forcedWinId?: number }) {
   
   const handleSpin = () => {
     if (!user?.role || (user.role !== "ADMIN" && user.role !== "USER")) {
-      window.location.href = "/login";
-      return;
+      window.location.href = "/login"
+      return
     }
-    if (isSpinning || prizes.length === 0) return
+    
+    if (isSpinning) return
+    
+    if (!prizes || prizes.length === 0 || !weightedPrizes.current || weightedPrizes.current.length === 0) {
+      console.error("Cannot spin - prizes or weightedPrizes not initialized")
+      return
+    }
 
     audioRef.current && ((audioRef.current.currentTime = 0), audioRef.current.play())
     setIsSpinning(true)
@@ -135,28 +170,38 @@ export default function FurysWheel({ forcedWinId }: { forcedWinId?: number }) {
 
     spinSoundRef.current && ((spinSoundRef.current.currentTime = 0), spinSoundRef.current.play())
 
-    const selectedPrize = selectPrizeByProbability()
-    const targetAngle = calculateTargetAngleForPrize(selectedPrize)
+    const selectedPrize = selectPrizeByPercentage()
+    if (!selectedPrize) {
+      console.error("Failed to select a prize")
+      setIsSpinning(false)
+      return
+    }
     
+    const targetAngle = calculateTargetAngleForPrize(selectedPrize)
     const fullRotations = 5 + Math.floor(Math.random() * 3)
     const totalRotation = (fullRotations * 360) + targetAngle
     
-    setRotation(prev => prev + totalRotation)
+    // Store the current rotation + new rotation amount to calculate winner later
+    const newRotation = rotation + totalRotation
+    setRotation(newRotation)
 
     setTimeout(() => {
       setIsSpinning(false)
-      const finalRotation = (rotation + totalRotation) % 360
+      const finalRotation = newRotation % 360
       const actualWinner = getPrizeAtCurrentRotation(finalRotation)
       
-      setWinner(actualWinner)
-      console.log(`Wheel stopped at: ${finalRotation}°`)
-      console.log(`Winner: ${actualWinner.wheelName}`)
-
-      winSoundRef.current && ((winSoundRef.current.currentTime = 0), winSoundRef.current.play())
-      setTimeout(() => setShowPrize(true), 500)
+      if (actualWinner) {
+        setWinner(actualWinner)
+        winSoundRef.current && ((winSoundRef.current.currentTime = 0), winSoundRef.current.play())
+        setTimeout(() => setShowPrize(true), 500)
+      } else {
+        console.error("Failed to determine a winner")
+      }
     }, 5000)
   }
 
+
+  console.log("wheel winner", winner);
   return (
     <div className="relative flex flex-col items-center">
       <div className="relative w-72 h-72 md:w-96 md:h-96">
@@ -166,7 +211,7 @@ export default function FurysWheel({ forcedWinId }: { forcedWinId?: number }) {
             animate={{ rotate: rotation }}
             transition={{ duration: 5, ease: [0.2, 0.5, 0.8, 0.98] }}
           >
-            {prizes.map((prize, index) => (
+            {prizes?.map((prize, index) => (
               <WheelSegment 
                 key={prize.id} 
                 prize={prize} 
@@ -195,7 +240,7 @@ export default function FurysWheel({ forcedWinId }: { forcedWinId?: number }) {
           <PrizeOverlay
             prize={winner}
             onClose={() => setShowPrize(false)}
-            wheelName={winner.wheelName}
+            wheelName={approvedWheelData?.[0]?.name}
           />
         )}
       </AnimatePresence>

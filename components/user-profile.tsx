@@ -103,7 +103,7 @@ export function UserProfile({
           </div>
         </div>
 
-        <div className="mt-6 flex justify-between">
+        {/* <div className="mt-6 flex justify-between">
           <div className="text-center">
             <div className="text-2xl font-bold text-white">
               {claimedGifts.length}
@@ -117,7 +117,7 @@ export function UserProfile({
             </div>
             <div className="text-xs text-[#a0a0d9]">Rewards</div>
           </div>
-        </div>
+        </div> */}
 
         <div className="flex flex-col items-center justify-center mt-8 mb-6">
           <a

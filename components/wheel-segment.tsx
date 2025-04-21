@@ -39,7 +39,8 @@ export default function WheelSegment({ prize, index, total }: WheelSegmentProps)
         }}
       >
         <span
-          className={`text-sm font-semibold ${prize.textColor}`} // uses your custom textColor like 'text-white', 'text-black', etc.
+          // className={`text-sm font-semibold ${prize.textColor}`} // uses your custom textColor like 'text-white', 'text-black', etc.
+          className={`text-sm font-semibold text-white`}
           style={{
             transform: `rotate(${segmentAngle / 2}deg)`,
             whiteSpace: 'nowrap',

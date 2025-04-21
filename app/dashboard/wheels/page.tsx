@@ -21,10 +21,37 @@ export default function WheelsPage() {
   );
 const [isLoadingWheelStatus, setIsLoadingWheelStatus] = useState(false);
   const toggleStatus = async(wheel:any) => {
+    console.log("wheel of aproveal", {
+      id: wheel.id,
+      name: wheel.name,
+      status: "APPROVED",
+      wheelOption: wheel.wheelOption
+    });
+
+    const approvedPayload = {
+      id: wheel.id,
+      name: wheel.name,
+      status: "APPROVED",
+      wheelOption: wheel.wheelOption
+    }
+
+    const pendingPayload = {
+      id: wheel.id,
+      name: wheel.name,
+      status: "PENDING",
+      wheelOption: wheel.wheelOption
+    }
     setIsLoadingWheelStatus(true)
   try {
     if(wheel.status==="PENDING"){
-      const res = await axiosInstance.put(`/api/admin/wheel?id=${wheel.id}`, {status: "APPROVED", ...wheel})
+      const res = await axiosInstance.put(`/api/admin/wheel?id=${wheel.id}`, approvedPayload)
+      console.log("resonse approved the update", res);
+      setFetchAllWheelData(true);
+      toast.success(`${wheel.name} updated successfully! Kindly refresh the window`)
+     } else {
+      const res = await axiosInstance.put(`/api/admin/wheel?id=${wheel.id}`, pendingPayload)
+      console.log("resonse pending the update", res);
+      toast.success(`${wheel.name} updated successfully! Kindly refresh the window`)
       setFetchAllWheelData(true);
      }
   } catch (error) {
