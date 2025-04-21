@@ -35,6 +35,8 @@ type UserContextType = {
   pendingWinners: any;
   allWinnerDataLoading:any;
   approvedWheelDataLoading: any;
+  setFetchClaimedData: (value: boolean) => void;
+  claimedData: any;
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -48,6 +50,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [fetchAllWinnerData, setFetchAllWinnerData] = useState(false);
   const [fetchApprovedWinners, setFetchApprovedWinners] = useState(false);
   const [fetchPendingWinners, setFetchPendingWinners] = useState(false)
+  const [fetchClaimedData, setFetchClaimedData] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
 
@@ -55,7 +58,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
    try {
     const res = await axiosInstance.get("/api/auth/userData");
    if(res.data.data){
-    setUser(res.data.data)
+    setUser(res.data.data);
    }
    } catch (error) {
     console.log(error)
@@ -252,6 +255,33 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     enabled: fetchPendingWinners,
   });
 
+
+
+
+  const { data: claimedData, isLoading: claimedDataLoading } = useQuery({
+    queryKey: ["claimedData"],
+    queryFn: async () => {
+      try {
+        const response = await axiosInstance.get(`/api/admin/winnerSelected/user?userId=${user?.id}`);
+        console.log("all pending winners data response", response.data);
+        return response.data.data;
+      } catch (error) {
+        const errorDetails = handleAxiosError(error as AxiosError);
+        toast({
+          title: "all pending winner Data Fetch Failed",
+          description: errorDetails.message,
+          variant: "destructive",
+        });
+
+        if (errorDetails.redirect) {
+          router.push(errorDetails.redirect);
+        }
+        return null;
+      }
+    },
+    enabled: fetchClaimedData,
+  });
+
   return (
     <UserContext.Provider
       value={{
@@ -273,7 +303,10 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         pendingWinners,
         setFetchPendingWinners,
         allWinnerDataLoading,
-        approvedWheelDataLoading
+        approvedWheelDataLoading,
+        claimedData,
+        setFetchClaimedData
+
       }}
     >
       {children}

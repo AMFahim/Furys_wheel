@@ -5,9 +5,11 @@ import { Users, ShipWheelIcon as Wheel, Trophy, Award } from "lucide-react"
 import { RecentActivity } from "@/components/admin/recent-activity"
 import { useUser } from "@/providers/UserContext"
 import { useEffect } from "react"
+import { useRouter } from "next/navigation"
 
 export default function AdminDashboard() {
-  const {allWheelData, allUsersData, setFetchAllUserData, setFetchAllWinnerData, setFetchAllWheelData, allWinnerData} = useUser();
+  const {allWheelData, allUsersData, setFetchAllUserData, setFetchAllWinnerData, setFetchAllWheelData, allWinnerData, user} = useUser();
+  const router = useRouter();
 
   console.log("all winnder dashboard data", allWheelData);
 
@@ -15,7 +17,17 @@ export default function AdminDashboard() {
     setFetchAllWheelData(true);
     setFetchAllWinnerData(true);
     setFetchAllUserData(true);
+    // if(user?.role !== "ADMIN") {
+    //   router.push("/");
+    // }
   }, [])
+
+
+  // useEffect(() => {
+  //   if(user?.role !== "USER") {
+  //     router.push("/");
+  //   }
+  // }, [])
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold">Dashboard</h1>

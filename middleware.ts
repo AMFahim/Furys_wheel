@@ -185,7 +185,6 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL("/login", baseUrl));
     }
 
-    console.log(user);
     // Check if user has required role for the path
     const requiredRoles =
       PROTECTED_ROUTES[protectedPath as keyof typeof PROTECTED_ROUTES];

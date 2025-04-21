@@ -4,6 +4,7 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { UserProfile } from "@/components/user-profile";
 import { useUser } from "@/providers/UserContext";
 import axiosInstance from "@/utils/axiosInstance";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 // Define TypeScript interfaces
@@ -16,12 +17,12 @@ interface WinPrize {
   claimed?: boolean;
 }
 
-interface User {
-  id: string;
-  username: string;
-  discordAvatar?: string;
-  winPrize?: WinPrize[];
-}
+// interface User {
+//   id: string;
+//   username: string;
+//   discordAvatar?: string;
+//   winPrize?: WinPrize[];
+// }
 
 export type GiftType = 'wheel' | 'item' | 'currency' | 'status';
 
@@ -32,38 +33,49 @@ interface ClaimedGift {
 }
 
 export default function ProfilePage() {
-  const { user } = useUser() as { user: User | null };
-  const [claimedData, setClaimedData] = useState<WinPrize[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const { user, claimedData, setFetchClaimedData } = useUser() as { user: any | null, claimedData: any, setFetchClaimedData: (value: boolean) => void, };
+  // const [claimedData, setClaimedData] = useState<WinPrize[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const router = useRouter();
   
   useEffect(() => {
     if (user) {
-      fetchClaimed();
+      setFetchClaimedData(true)
     }
-  }, [user]);
+  }, [user, claimedData?.length]);
 
-  const fetchClaimed = async () => {
-    try {
-      setIsLoading(true);
-      const res = await axiosInstance.get(`/api/admin/winnerSelected/user?userId=${user?.id}`);
+  // useEffect(() => {
+  //  fetchClaimed();
+  // }, []);
 
-      // console.log("profile data", res);
-      if (res.data.data) {
-        setClaimedData(res.data.data);
-      }
-      setIsLoading(false);
+  // useEffect(() => {
+  //   if(user?.role !== "USER") {
+  //     router.push("/");
+  //   }
+  // }, [])
 
-    } catch (error) {
-      console.error("Error fetching claimed data:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // const fetchClaimed = async () => {
+  //   try {
+  //     setIsLoading(true);
+  //     const res = await axiosInstance.get(`/api/admin/winnerSelected/user?userId=${user?.id}`);
+
+  //     // console.log("profile data", res);
+  //     if (res.data.data) {
+  //       setClaimedData(res.data.data);
+  //     }
+  //     setIsLoading(false);
+
+  //   } catch (error) {
+  //     console.error("Error fetching claimed data:", error);
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   const formatClaimedGifts = (): ClaimedGift[] => {
     if (!user?.winPrize) return [];
     
-    return user.winPrize.map(prize => ({
+    return user.winPrize.map((prize:any) => ({
       name: prize.wheelReward,
       type: getGiftType(prize.wheelReward),
       claimedAt: new Date(prize.updatedAt || prize.createdAt).toLocaleDateString()

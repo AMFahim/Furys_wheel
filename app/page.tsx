@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
 export default function Home() {
-  const { setFetchAllWheelData, user, setUser, approvedWheelData, setFetchApprovedWheelData, setFetchApprovedWinners, approvedWinners } = useUser();
+  const { setFetchAllWheelData, user, setUser, approvedWheelData,setFetchClaimedData, setFetchApprovedWheelData, setFetchApprovedWinners, approvedWinners } = useUser();
   const [selectedWheel, setSelectedWheel] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
@@ -209,7 +209,7 @@ export default function Home() {
                     </button>
                   </Link>
                 ) : (
-                  <Link href="/profile">
+                  <Link href="/profile" onClick={() => setFetchClaimedData(true)}>
                     <button className="w-full text-left px-4 py-2 text-purple-400 hover:bg-purple-900/20">
                       Profile
                     </button>
