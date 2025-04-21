@@ -22,6 +22,14 @@ interface GlassWinnersListProps {
 export default function GlassWinnersList({ winners }: GlassWinnersListProps) {
   const [isCollapsed, setIsCollapsed] = useState(false)
 
+  const maskUsername = (username:string) => {
+    if (!username || username.length <= 2) return username;
+    const first = username[0];
+    const last = username[username.length - 1];
+    const middle = '*'.repeat(username.length - 2);
+    return `${first}${middle}${last}`;
+  };
+
   return (
     <>
       {/* Collapse/Expand Button */}
@@ -85,7 +93,7 @@ export default function GlassWinnersList({ winners }: GlassWinnersListProps) {
 
                       {/* Winner Info */}
                       <div className="flex-1">
-                        <h3 className="font-medium text-white">{winner.user.username}</h3>
+                        <h3 className="font-medium text-white">{maskUsername(winner.user.username)}</h3>
                         <div className="flex flex-col w-full gap-1 mt-1">
                           <span className="text-xs px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300">
                             {winner.wheelReward}
