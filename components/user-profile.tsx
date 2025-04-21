@@ -104,7 +104,7 @@ export function UserProfile({
               <div className="bg-[#1e1e38] rounded-lg p-4 text-center text-[#a0a0d9]">
                 <p> No rewards claimed yet. Spin the wheel to win prizes!</p>
                 <Button className="border border-gray-200 px-3 py-1" onClick={handleReload}>
-                  <Loader />
+                  <Loader /> Reload
                 </Button>
               </div>
             )}
