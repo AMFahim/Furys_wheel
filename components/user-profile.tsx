@@ -151,7 +151,7 @@ export function UserProfile({
               />
             </div>
 
-            <div
+            {/* <div
               className={`
           absolute -bottom-6 left-0 right-0 text-center
           text-sm font-medium text-purple-700
@@ -160,7 +160,7 @@ export function UserProfile({
         `}
             >
               Spin and Win!
-            </div>
+            </div> */}
           </a>
 
           {isHovered && (
