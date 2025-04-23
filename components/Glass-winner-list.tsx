@@ -34,7 +34,8 @@ export default function GlassWinnersList({ winners }: GlassWinnersListProps) {
     <>
       {/* Collapse/Expand Button */}
       <motion.button
-        className="fixed top-1/2 right-[280px] z-30 -translate-y-1/2 bg-purple-600/80 hover:bg-purple-700/80 backdrop-blur-sm text-white rounded-l-full p-2 shadow-lg"
+      // bg-purple-600/80 
+        className="fixed top-1/2 right-[280px] z-30 -translate-y-1/2 hover:bg-purple-700/80 backdrop-blur-sm text-white rounded-l-full p-2 shadow-lg"
         animate={{ right: isCollapsed ? "16px" : "280px" }}
         onClick={() => setIsCollapsed(!isCollapsed)}
         aria-label={isCollapsed ? "Expand winners list" : "Collapse winners list"}

@@ -24,7 +24,8 @@ export default function GlassWheelList({ wheels, selectedWheel, onSelectWheel }:
     <>
       {/* Collapse/Expand Button */}
       <motion.button
-        className="fixed top-1/2 left-[280px] z-30 -translate-y-1/2 bg-purple-600/80 hover:bg-purple-700/80 backdrop-blur-sm text-white rounded-r-full p-2 shadow-lg"
+      // bg-purple-600/80
+        className="fixed top-1/2 left-[280px] z-30 -translate-y-1/2 hover:bg-purple-700/80 backdrop-blur-sm text-white rounded-r-full p-2 shadow-lg"
         animate={{ left: isCollapsed ? "16px" : "280px" }}
         onClick={() => setIsCollapsed(!isCollapsed)}
         aria-label={isCollapsed ? "Expand wheel list" : "Collapse wheel list"}
