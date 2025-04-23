@@ -57,10 +57,10 @@ export default function GlassWheelList({ wheels, selectedWheel, onSelectWheel }:
               <h2 className="text-2xl font-bold flex items-center gap-2">
                 <Sparkles className="text-purple-400" size={20} />
                 <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-400">
-                 Available Wheels
+                 Available Prizes
                 </span>
               </h2>
-              <p className="text-sm text-gray-400 mt-1">Wheel of Luck</p>
+              <p className="text-sm text-gray-400 mt-1">Furys Wheel</p>
             </div>
 
             {/* Wheel List */}
