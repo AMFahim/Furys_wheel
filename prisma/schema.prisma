@@ -1,6 +1,7 @@
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  // directUrl = env("DIRECT_URL")
 }
 
 generator client {
@@ -16,47 +17,47 @@ enum wheelStatus {
   PENDING
   APPROVED
 }
+
 model User {
-  id              String    @id @default(cuid())
-  username        String    @unique
-  authType        String    @default("local") // "local" or "discord"
+  id              String     @id @default(cuid())
+  username        String     @unique
+  authType        String     @default("local") // "local" or "discord"
   password        String
-  discordId       String?   @unique
+  discordId       String?    @unique
   discordUsername String?
   discordAvatar   String?
-  role            userStatus  @default(USER)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  role            userStatus @default(USER)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
 
-  winPrize        winPrize[]
+  winPrize winPrize[]
 
   @@index([authType])
 }
 
 model Wheel {
-  id          String    @id  @default(cuid())
+  id          String        @id @default(cuid())
   name        String
-  status      wheelStatus @default(PENDING)
+  status      wheelStatus   @default(PENDING)
   wheelOption WheelOption[]
 }
 
 model WheelOption {
-  id          String  @id    @default(cuid())
-  name        String
-  percentage  Float
-  colour      String
+  id         String @id @default(cuid())
+  name       String
+  percentage Float
+  colour     String
 
-
-  wheelId     String
-  wheel       Wheel   @relation(fields: [wheelId], references: [id], onDelete: Cascade)
+  wheelId String
+  wheel   Wheel  @relation(fields: [wheelId], references: [id], onDelete: Cascade)
 }
 
 model winPrize {
-  id            String    @id   @default(cuid())
-  userId        String    
-  wheelName     String
-  wheelReward   String
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  updatedBy     String?   // Optional field to track who updated the prize
-  status        wheelStatus @default(PENDING)
+  id          String      @id @default(cuid())
+  userId      String
+  wheelName   String
+  wheelReward String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  updatedBy   String? // Optional field to track who updated the prize
+  status      wheelStatus @default(PENDING)
 }
