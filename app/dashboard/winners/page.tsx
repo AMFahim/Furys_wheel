@@ -18,7 +18,7 @@ export default function WinnersPage() {
 
   useEffect(() => {
     setFetchAllWinnerData(true);
-  },[])
+  },[allWinnerData])
 
 
   const handleApprovePending = async(winner:any) => {
@@ -28,11 +28,13 @@ export default function WinnersPage() {
         console.log("resonse APPROVED the update", res);
         setFetchAllWinnerData(true);
         toast.success(`${winner.user.username} Approved!`)
+        window.location.reload();
       } else {
         const res = await axiosInstance.put(`/api/admin/winnerSelected?id=${winner.id}`, {status: "PENDING"})
         console.log("resonse PENDING the update", res);
         setFetchAllWinnerData(true);
         toast.success(`${winner.user.username} Pending now!`)
+        window.location.reload();
       }
     } catch (error) {
       console.log(error);

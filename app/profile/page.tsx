@@ -33,7 +33,8 @@ interface ClaimedGift {
 }
 
 export default function ProfilePage() {
-  const { user, claimedData, setFetchClaimedData } = useUser() as { user: any | null, claimedData: any, setFetchClaimedData: (value: boolean) => void, };
+  const { user, claimedData, setFetchClaimedData,fetchUserData
+  } = useUser() as { user: any | null, claimedData: any, setFetchClaimedData: (value: boolean) => void, fetchUserData:any };
   // const [claimedData, setClaimedData] = useState<WinPrize[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
@@ -41,8 +42,10 @@ export default function ProfilePage() {
   useEffect(() => {
     if (user) {
       setFetchClaimedData(true)
+      fetchUserData();
+      console.log("win prize");
     }
-  }, [user, claimedData?.length]);
+  }, [user?.winPrize]);
 
   // useEffect(() => {
   //  fetchClaimed();
@@ -82,8 +85,23 @@ export default function ProfilePage() {
     }));
   };
 
+  console.log("claimed data", claimedData);
+  console.log("user data", user);
+
+
+  // const formatClaimedGifts = (): ClaimedGift[] => {
+  //   if (!claimedData) return [];
+  
+  //   return claimedData.map((prize: any) => ({
+  //     name: prize.wheelReward,
+  //     type: getGiftType(prize.wheelReward),
+  //     claimedAt: new Date(prize.updatedAt || prize.createdAt).toLocaleDateString()
+  //   }));
+  // };
+  
+
   const getGiftType = (rewardName: string): GiftType => {
-    const lowerName = rewardName.toLowerCase();
+    const lowerName = rewardName?.toLowerCase();
     if (lowerName.includes('wheel') || lowerName.includes('spin')) return 'wheel';
     if (lowerName.includes('box') || lowerName.includes('headphones')) return 'item';
     if (lowerName.includes('coin') || lowerName.includes('cash')) return 'currency';
@@ -108,8 +126,8 @@ export default function ProfilePage() {
         <UserProfile
           username={user.username}
           avatarUrl={user.discordAvatar || "/api/placeholder/100/100"}
-          userRank={1}
-          claimedGifts={user.winPrize ? formatClaimedGifts() : []}
+          // userRank={1}
+          claimedGifts={user.winPrize && user.winPrize ? formatClaimedGifts() : []}
         />
       )}
     </main>

@@ -16,7 +16,7 @@ type GiftType = {
 interface UserProfileProps {
   username: string;
   avatarUrl: string;
-  userRank: number;
+  // userRank: number;
   claimedGifts: GiftType[];
   totalSpins?: number;
 }
@@ -24,7 +24,7 @@ interface UserProfileProps {
 export function UserProfile({
   username,
   avatarUrl,
-  userRank,
+  // userRank,
   claimedGifts,
   totalSpins = 0,
 }: UserProfileProps) {

@@ -37,6 +37,7 @@ type UserContextType = {
   approvedWheelDataLoading: any;
   setFetchClaimedData: (value: boolean) => void;
   claimedData: any;
+  fetchUserData:any;
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -305,7 +306,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         allWinnerDataLoading,
         approvedWheelDataLoading,
         claimedData,
-        setFetchClaimedData
+        setFetchClaimedData,
+        fetchUserData
 
       }}
     >

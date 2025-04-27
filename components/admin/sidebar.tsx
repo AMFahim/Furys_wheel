@@ -1,6 +1,6 @@
 "use client"
 import Link from "next/link"
-import { LayoutDashboard, ShipWheelIcon as Wheel, Users, Trophy, Settings, LogOut } from "lucide-react"
+import { LayoutDashboard, ShipWheelIcon as Wheel, Users, Trophy, Settings, LogOut, ArrowRight } from "lucide-react"
 import { useUser } from "@/providers/UserContext"
 import axiosInstance from "@/utils/axiosInstance";
 import { useRouter } from "next/navigation";
@@ -21,6 +21,10 @@ export function Sidebar() {
       console.error("Logout failed:", error);
     }
   };
+
+  const handleNavigate = async() => {
+    router.push("/")
+  }
   return (
     <div className="w-64 bg-[#252547] border-r border-[#3a3a5e] h-screen sticky top-0 flex flex-col">
       <div className="p-6">
@@ -74,6 +78,10 @@ export function Sidebar() {
       </nav>
 
       <div className="p-4 border-t border-[#3a3a5e]">
+      <button   onClick={handleNavigate} className="flex w-full items-center gap-3 px-3 py-2 text-sm rounded-md hover:bg-[#3a3a5e] text-white">
+          <ArrowRight className="h-5 w-5" />
+          Bact to Home
+        </button>
         <button   onClick={handleLogout} className="flex w-full items-center gap-3 px-3 py-2 text-sm rounded-md hover:bg-[#3a3a5e] text-white">
           <LogOut className="h-5 w-5" />
           Logout

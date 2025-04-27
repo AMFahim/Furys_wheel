@@ -11,7 +11,7 @@ export default function AdminDashboard() {
   const {allWheelData, allUsersData, setFetchAllUserData, setFetchAllWinnerData, setFetchAllWheelData, allWinnerData, user} = useUser();
   const router = useRouter();
 
-  console.log("all winnder dashboard data", allWheelData);
+  // console.log("all winnder dashboard data", allWheelData);
 
   useEffect(() => {
     setFetchAllWheelData(true);

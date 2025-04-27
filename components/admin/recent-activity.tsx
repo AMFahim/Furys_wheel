@@ -1,16 +1,21 @@
 "use client"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useUser } from "@/providers/UserContext"
+import { useEffect } from "react"
 
 export function RecentActivity() {
-  const {allWinnerData, allWinnerDataLoading} = useUser()
+  const {allWinnerData, allWinnerDataLoading, setFetchAllWinnerData} = useUser()
+
+  useEffect(() => {
+    setFetchAllWinnerData(true)
+  },[allWinnerData])
   
   if(allWinnerDataLoading){
     <div>Loading....</div>
   }
   return (
     <div className="space-y-4">
-      {allWinnerData && allWinnerData?.data.slice(-5).map((winner: any, i:number) => (
+      {allWinnerData && allWinnerData?.data.slice(-5).reverse().map((winner: any, i:number) => (
         <div key={i} className="flex items-center gap-4">
           <Avatar className="h-8 w-8">
             <AvatarImage src={winner.avatar || "/placeholder.svg"} />

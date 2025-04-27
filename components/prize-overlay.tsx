@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { X, Check } from "lucide-react";
 import axiosInstance from "@/utils/axiosInstance";
 import { useRouter } from "next/navigation";
+import { useUser } from "@/providers/UserContext";
 
 type Prize = {
   id: number;
@@ -29,6 +30,7 @@ export default function PrizeOverlay({
   const [showSuccess, setShowSuccess] = useState(false);
   const [reloadingUI, setReloadingUI] = useState(false);
   const router = useRouter();
+  const {fetchUserData} = useUser()
   
   console.log(prize, wheelName);
   
@@ -52,6 +54,7 @@ export default function PrizeOverlay({
       console.log(error);
       
     } finally {
+      fetchUserData();
       setIsSubmitting(false);
     }
   };

@@ -48,12 +48,15 @@ const [isLoadingWheelStatus, setIsLoadingWheelStatus] = useState(false);
       console.log("resonse approved the update", res);
       setFetchAllWheelData(true);
       toast.success(`${wheel.name} updated successfully! Kindly refresh the window`)
-     } else {
-      const res = await axiosInstance.put(`/api/admin/wheel?id=${wheel.id}`, pendingPayload)
-      console.log("resonse pending the update", res);
-      toast.success(`${wheel.name} updated successfully! Kindly refresh the window`)
-      setFetchAllWheelData(true);
-     }
+      window.location.reload();
+     } 
+    //  else {
+    //   const res = await axiosInstance.put(`/api/admin/wheel?id=${wheel.id}`, pendingPayload)
+    //   console.log("resonse pending the update", res);
+    //   toast.success(`${wheel.name} updated successfully! Kindly refresh the window`)
+    //   setFetchAllWheelData(true);
+    //   window.location.reload();
+    //  }
   } catch (error) {
     toast.error("someting went wrong!")
   }finally{
@@ -114,7 +117,7 @@ const [isLoadingWheelStatus, setIsLoadingWheelStatus] = useState(false);
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {allWheelData?.map((wheel: any, index: number) => (
+        {allWheelData?.reverse().map((wheel: any, index: number) => (
           <Card key={index} className="bg-[#252547] border-0">
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center justify-between">
