@@ -19,49 +19,54 @@ export default function WheelsPage() {
   const [wheelStatuses, setWheelStatuses] = useState<Record<string, boolean>>(
     {}
   );
-const [isLoadingWheelStatus, setIsLoadingWheelStatus] = useState(false);
-  const toggleStatus = async(wheel:any) => {
+  const [isLoadingWheelStatus, setIsLoadingWheelStatus] = useState(false);
+  const toggleStatus = async (wheel: any) => {
     console.log("wheel of aproveal", {
       id: wheel.id,
       name: wheel.name,
       status: "APPROVED",
-      wheelOption: wheel.wheelOption
+      wheelOption: wheel.wheelOption,
     });
 
     const approvedPayload = {
       id: wheel.id,
       name: wheel.name,
       status: "APPROVED",
-      wheelOption: wheel.wheelOption
-    }
+      wheelOption: wheel.wheelOption,
+    };
 
     const pendingPayload = {
       id: wheel.id,
       name: wheel.name,
       status: "PENDING",
-      wheelOption: wheel.wheelOption
+      wheelOption: wheel.wheelOption,
+    };
+    setIsLoadingWheelStatus(true);
+    try {
+      if (wheel.status === "PENDING") {
+        const res = await axiosInstance.put(
+          `/api/admin/wheel?id=${wheel.id}`,
+          approvedPayload
+        );
+        console.log("resonse approved the update", res);
+        setFetchAllWheelData(true);
+        toast.success(
+          `${wheel.name} updated successfully! Kindly refresh the window`
+        );
+        window.location.reload();
+      }
+      //  else {
+      //   const res = await axiosInstance.put(`/api/admin/wheel?id=${wheel.id}`, pendingPayload)
+      //   console.log("resonse pending the update", res);
+      //   toast.success(`${wheel.name} updated successfully! Kindly refresh the window`)
+      //   setFetchAllWheelData(true);
+      //   window.location.reload();
+      //  }
+    } catch (error) {
+      toast.error("someting went wrong!");
+    } finally {
+      setIsLoadingWheelStatus(false);
     }
-    setIsLoadingWheelStatus(true)
-  try {
-    if(wheel.status==="PENDING"){
-      const res = await axiosInstance.put(`/api/admin/wheel?id=${wheel.id}`, approvedPayload)
-      console.log("resonse approved the update", res);
-      setFetchAllWheelData(true);
-      toast.success(`${wheel.name} updated successfully! Kindly refresh the window`)
-      window.location.reload();
-     } 
-    //  else {
-    //   const res = await axiosInstance.put(`/api/admin/wheel?id=${wheel.id}`, pendingPayload)
-    //   console.log("resonse pending the update", res);
-    //   toast.success(`${wheel.name} updated successfully! Kindly refresh the window`)
-    //   setFetchAllWheelData(true);
-    //   window.location.reload();
-    //  }
-  } catch (error) {
-    toast.error("someting went wrong!")
-  }finally{
-    setIsLoadingWheelStatus(false);
-  }
     // setStatus((prev) => (prev === "ACTIVE" ? "INACTIVE" : "ACTIVE"));
   };
 
@@ -86,6 +91,7 @@ const [isLoadingWheelStatus, setIsLoadingWheelStatus] = useState(false);
       );
       toast.success("Wheel Successfully Deleted!");
       setFetchAllWheelData(true);
+      window.location.reload();
     } catch (error) {
       toast.error("Something went wrong! Please try again.");
     } finally {
@@ -100,7 +106,7 @@ const [isLoadingWheelStatus, setIsLoadingWheelStatus] = useState(false);
   };
 
   // const handleActive = async() => {
-    
+
   // }
 
   return (
@@ -153,12 +159,15 @@ const [isLoadingWheelStatus, setIsLoadingWheelStatus] = useState(false);
                   <span>Status:</span>
                   {/* <span className="text-green-500">Active</span> */}
                   <button
-                    onClick={() =>toggleStatus(wheel)}
-                    className={`px-6 py-1 rounded-full font-semibold transition-all duration-300${ wheel.status ==="APPROVED" ? " text-green-800"
-            : "border border-[#5c2ca9] text-[#5c2ca9]"}
+                    onClick={() => toggleStatus(wheel)}
+                    className={`px-6 py-1 rounded-full font-semibold transition-all duration-300${
+                      wheel.status === "APPROVED"
+                        ? " text-green-800 cursor-not-allowed"
+                        : "border border-[#5c2ca9] text-[#5c2ca9]"
+                    }
         hover:opacity-90 bg-white`}
                   >
-                    {isLoadingWheelStatus ? "...": wheel.status}
+                    {isLoadingWheelStatus ? "..." : wheel.status}
                   </button>
                 </div>
                 <div className="flex justify-between">

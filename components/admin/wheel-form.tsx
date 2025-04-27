@@ -209,12 +209,14 @@ export function WheelForm({setIsWheelFormDisplay, wheelId}: PropsType) {
         console.log("Wheel update:", response.data);
         toast.success("Wheel successfully Updated!");
         setIsWheelFormDisplay(false);
+        window.location.reload()
       }else {
         const response = await axiosInstance.post("/api/admin/wheel", formData);
         console.log("Wheel Created:", response.data);
         console.log("Submitted Data Format:", JSON.stringify(formData, null, 2));
         toast.success("Wheel successfully created!");
         setIsWheelFormDisplay(false);
+        window.location.reload();
       }
     
     } catch (error) {
